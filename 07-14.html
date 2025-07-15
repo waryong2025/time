@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>근무현황표 생성기</title>
+    <!-- html2pdf.js 라이브러리 추가 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px; /* 전체 페이지 여백 조정 */
+            background-color: #f4f4f4;
+        }
+        .controls {
+            background-color: #fff;
+            padding: 15px; /* 컨트롤 영역 패딩 조정 */
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px; /* 컨트롤 영역과 표 사이 간격 조정 */
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px; /* 요소 간 간격 조정 */
+            align-items: center;
+        }
+        .controls label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .controls input[type="number"],
+        .controls select {
+            padding: 6px; /* 입력 필드 패딩 조정 */
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 70px; /* 입력 필드 너비 조정 */
+        }
+        .controls input[type="radio"] {
+            margin-left: 10px;
+        }
+        .controls button {
+            padding: 8px 15px; /* 버튼 패딩 조정 */
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 15px; /* 버튼 폰트 크기 조정 */
+            margin-right: 8px; /* 버튼 간 간격 추가 */
+        }
+        .controls button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0; /* 테이블 상하 마진 제거 */
+            font-size: 0.8em; /* 테이블 폰트 크기 조정 (더 작게) */
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            table-layout: fixed; /* 테이블 레이아웃 고정 */
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 5px; /* 셀 패딩 조정 (더 작게) */
+            text-align: center;
+            vertical-align: top; /* 셀 내용이 위에서부터 정렬되도록 */
+            line-height: 1.2; /* 줄 간격 조정 (더 작게) */
+            word-break: keep-all; /* 단어 잘림 방지 */
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        /* 각 열의 너비 설정 (A4 가로에 맞게 최적화) */
+        th:nth-child(1), td:nth-child(1) { width: 8%; } /* 월일 */
+        th:nth-child(2), td:nth-child(2) { width: 8%; } /* 요일 */
+        th:nth-child(3), td:nth-child(3) { width: 18%; } /* 3613 */
+        th:nth-child(4), td:nth-child(4) { width: 14%; } /* 5518 */
+        th:nth-child(5), td:nth-child(5) { width: 18%; } /* 5537 */
+        th:nth-child(6), td:nth-child(6) { width: 10%; } /* 3612 */
+        th:nth-child(7), td:nth-child(7) { width: 10%; } /* 5536호 */
+        th:nth-child(8), td:nth-child(8) { width: 14%; } /* 기 타 */
+
+        caption {
+            font-size: 1.2em; /* 캡션 폰트 크기 조정 */
+            margin-bottom: 10px; /* 캡션과 테이블 간격 조정 */
+            font-weight: bold;
+            color: #333;
+        }
+        .sunday {
+            background-color: #ffe0e0; /* 일요일 배경색 */
+        }
+        .saturday {
+            background-color: #e0e0ff; /* 토요일 배경색 */
+        }
+        .holiday {
+            background-color: #ffcccc; /* 법정휴일 배경색 */
+            font-weight: bold;
+            color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <label for="yearInput">년:</label>
+        <input type="number" id="yearInput" value="2025" min="2000" max="2100">
+        <label for="monthInput">월:</label>
+        <input type="number" id="monthInput" value="8" min="1" max="12">
+        
+        <input type="radio" id="option1" name="displayOption" value="1" checked>
+        <label for="option1">1일 ~ 15일</label>
+        <input type="radio" id="option2" name="displayOption" value="2">
+        <label for="option2">16일 ~ 말일</label>
+        
+        <button onclick="generateSchedule()">근무현황표 생성</button>
+        <button onclick="saveAsPdf()">PDF로 저장</button>
+        <button onclick="printAsPdf()">A4로 인쇄</button>
+    </div>
+
+    <div id="scheduleContainer">
+        <table>
+            <caption id="tableCaption">종로 07번 2025년 08월 1일 ~ 15일까지 근무현황표</caption>
+            <thead>
+                <tr>
+                    <th>월일</th>
+                    <th>요일</th>
+                    <th>3613</th>
+                    <th>5518</th>
+                    <th>5537</th>
+                    <th>3612</th>
+                    <th>5536호</th>
+                    <th>기 타</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody">
+                <!-- JavaScript로 내용이 채워집니다. -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 요일 인덱스를 한글 요일 이름으로 변환하는 함수
+        const getDayName = (dayIndex) => {
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            return days[dayIndex];
+        };
+
+        // 월의 마지막 날짜를 구하는 함수 (month는 1-indexed)
+        const getLastDayOfMonth = (year, month) => {
+            return new Date(year, month, 0).getDate();
+        };
+
+        // 특정 날짜가 법정 공휴일인지 확인하는 함수 (2025년 기준)
+        const isPublicHoliday = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+
+            const holidays2025 = new Set([
+                "2025-01-01", // 신정
+                "2025-01-28", // 설날
+                "2025-01-29", // 설날
+                "2025-01-30", // 설날
+                "2025-03-01", // 삼일절
+                "2025-05-05", // 어린이날
+                "2025-06-02", // 부처님오신날 대체공휴일 (부처님오신날 6월 1일이 일요일이므로)
+                "2025-06-06", // 현충일
+                "2025-08-15", // 광복절
+                "2025-10-03", // 개천절
+                "2025-10-06", // 추석 대체공휴일 (추석 연휴 중 토, 일요일이 겹치므로)
+                "2025-10-09", // 한글날
+                "2025-12-25"  // 크리스마스
+            ]);
+
+            return holidays2025.has(formattedDate);
+        };
+
+
+        // 근무현황표를 생성하는 함수
+        function generateSchedule() {
+            const year = parseInt(document.getElementById('yearInput').value);
+            const month = parseInt(document.getElementById('monthInput').value); // 1-indexed month
+            const selectedOption = document.querySelector('input[name="displayOption"]:checked').value;
+            const scheduleBody = document.getElementById('scheduleBody');
+            const tableCaption = document.getElementById('tableCaption');
+
+            let startDate, endDate;
+
+            if (selectedOption === '1') {
+                startDate = new Date(year, month - 1, 1); // Date 객체는 0-indexed month
+                endDate = new Date(year, month - 1, 15);
+            } else { // option 2
+                startDate = new Date(year, month - 1, 16);
+                endDate = new Date(year, month - 1, getLastDayOfMonth(year, month));
+            }
+
+            // 날짜 비교의 정확성을 위해 시/분/초/밀리초를 0으로 설정
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(0, 0, 0, 0);
+
+            // 캡션 업데이트
+            tableCaption.textContent = `종로 07번 ${year}년 ${month}월 ${startDate.getDate()}일 ~ ${endDate.getDate()}일까지 근무현황표`;
+
+            // 기존 내용 초기화
+            scheduleBody.innerHTML = '';
+
+            // 초기 근무자 배열 설정 (원본 파일의 7월 16일(수) 시작 상태)
+            let initialNames3613 = ['강명희', '이미휴']; 
+            let initialNames5537 = ['정형택', '이기용']; 
+
+            // 기준 날짜: 2025년 7월 16일 (수요일)
+            const baseDate = new Date(2025, 6, 16); // 7월은 6 (0-indexed)
+            baseDate.setHours(0, 0, 0, 0);
+            // 2025년 7월 21일 (월요일)은 첫 번째 로테이션이 시작되는 월요일
+            const firstRotationMonday = new Date(2025, 6, 21); // 7월은 6 (0-indexed)
+            firstRotationMonday.setHours(0, 0, 0, 0);
+
+            // 현재 기간의 시작일이 속한 주의 월요일을 찾습니다.
+            let firstMondayOfCurrentPeriod = new Date(startDate);
+            const dayOfWeekForStartDate = firstMondayOfCurrentPeriod.getDay(); // 0 (일) to 6 (토)
+            const daysToSubtract = (dayOfWeekForStartDate === 0) ? 6 : dayOfWeekForStartDate - 1; 
+            firstMondayOfCurrentPeriod.setDate(firstMondayOfCurrentPeriod.getDate() - daysToSubtract);
+            firstMondayOfCurrentPeriod.setHours(0, 0, 0, 0); 
+
+            // firstRotationMonday (7/21)부터 firstMondayOfCurrentPeriod까지 몇 주가 지났는지 계산
+            let weeksPassed = 0;
+            if (firstMondayOfCurrentPeriod.getTime() >= firstRotationMonday.getTime()) {
+                const diffTime = firstMondayOfCurrentPeriod.getTime() - firstRotationMonday.getTime();
+                weeksPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+            } else {
+                weeksPassed = 0; 
+            }
+
+            // 현재 근무자 배열 (로테이션 상태에 따라 초기화)
+            let currentNames3613 = [...initialNames3613];
+            let currentNames5537 = [...initialNames5537];
+
+            // 주차에 따라 초기 근무자 배열 순서를 뒤집습니다.
+            if (weeksPassed % 2 !== 0) { // 홀수 주차일 경우 초기값 스왑
+                currentNames3613.reverse();
+                currentNames5537.reverse();
+            }
+            
+            // 근무 현황 생성 루프
+            let currentDate = new Date(startDate);
+            while (currentDate.getTime() <= endDate.getTime()) { 
+                const day = currentDate.getDate();
+                const dayOfWeek = currentDate.getDay(); // 0:일, 1:월, ..., 6:토
+                const dayName = getDayName(dayOfWeek);
+                const isHoliday = isPublicHoliday(currentDate); // 법정 공휴일 여부 확인
+
+                // 매주 월요일마다 근무자 순서 변경
+                if (dayOfWeek === 1 && currentDate.getTime() > firstMondayOfCurrentPeriod.getTime()) {
+                    currentNames3613.reverse();
+                    currentNames5537.reverse();
+                    firstMondayOfCurrentPeriod = new Date(currentDate); 
+                    firstMondayOfCurrentPeriod.setHours(0, 0, 0, 0);
+                }
+
+                let rowClass = '';
+                if (dayOfWeek === 0) { // 일요일
+                    rowClass = 'sunday';
+                } else if (dayOfWeek === 6) { // 토요일
+                    rowClass = 'saturday';
+                } else if (isHoliday) { // 법정휴일
+                    rowClass = 'holiday'; 
+                }
+
+                let cell3613 = '';
+                let cell5518 = '';
+                let cell5537 = '';
+                let cell3612 = '';
+                let cell5536ho = '';
+                let cellEtc = '';
+
+                // 일요일 또는 법정휴일인 경우 모든 칸 비움
+                if (dayOfWeek === 0 || isHoliday) { 
+                    cell3613 = '';
+                    cell5518 = '';
+                    cell5537 = '';
+                    cell3612 = '';
+                    cell5536ho = '';
+                } else { // 평일 및 토요일
+                    cell3613 = currentNames3613.join('<br>');
+                    cell5518 = '권과장'; // 5518호는 권과장 고정
+
+                    if (dayOfWeek === 6) { // 토요일 5537호는 특별 규칙 적용
+                        cell5537 = '오인중<br>정형택';
+                    } else { // 평일 5537호는 로테이션 적용
+                        cell5537 = currentNames5537.join('<br>');
+                    }
+
+                    cell3612 = ''; // 3612호는 빈칸
+                    cell5536ho = ''; // 5536호는 빈칸
+                }
+
+                const row = `
+                    <tr class="${rowClass}">
+                        <td>${day}</td>
+                        <td>${dayName}</td>
+                        <td>${cell3613}</td>
+                        <td>${cell5518}</td>
+                        <td>${cell5537}</td>
+                        <td>${cell3612}</td>
+                        <td>${cell5536ho}</td>
+                        <td>${cellEtc}</td>
+                    </tr>
+                `;
+                scheduleBody.insertAdjacentHTML('beforeend', row);
+
+                currentDate.setDate(currentDate.getDate() + 1); // 다음 날짜로 이동
+            }
+        }
+
+        // PDF 저장 옵션 (A4 가로 방향)
+        const pdfOptions = {
+            margin: [10, 10, 10, 10], // 상, 우, 하, 좌 여백 (mm)
+            image: { type: 'jpeg', quality: 0.98 }, // 이미지 품질 설정
+            html2canvas: { scale: 1.5, logging: false, dpi: 192, letterRendering: true }, // HTML을 캔버스로 렌더링하는 설정
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } // PDF 용지 단위, 크기, 방향 (가로)
+        };
+
+        // PDF로 저장하는 함수
+        function saveAsPdf() {
+            const element = document.getElementById('scheduleContainer'); // PDF로 변환할 대상 요소
+            const captionText = document.getElementById('tableCaption').textContent;
+            // 파일명에 특수문자 제거 및 공백을 언더스코어로 변경
+            const filename = captionText.replace(/[^a-zA-Z0-9가-힣\s]/g, '').replace(/ /g, '_') + '.pdf'; 
+
+            html2pdf().set({ ...pdfOptions, filename: filename }).from(element).save();
+        }
+
+        // PDF로 인쇄하는 함수
+        function printAsPdf() {
+            const element = document.getElementById('scheduleContainer'); // PDF로 변환할 대상 요소
+            const captionText = document.getElementById('tableCaption').textContent;
+            const filename = captionText.replace(/[^a-zA-Z0-9가-힣\s]/g, '').replace(/ /g, '_') + '.pdf'; 
+
+            html2pdf().set({ ...pdfOptions, filename: filename })
+                .from(element)
+                .outputPdf('datauristring') // PDF 데이터를 Data URI 형태로 출력
+                .then(function(pdfDataUri) {
+                    const newWindow = window.open(); // 새 창 열기
+                    newWindow.document.write('<iframe width="100%" height="100%" src="' + pdfDataUri + '"></iframe>');
+                    // 새 창이 로드된 후 인쇄 다이얼로그를 자동으로 띄우려면 아래 주석을 해제할 수 있습니다.
+                    // 단, 일부 브라우저는 보안 정책 상 자동으로 인쇄 다이얼로그를 띄우는 것을 제한할 수 있습니다.
+                    // newWindow.onload = function() {
+                    //     newWindow.focus();
+                    //     newWindow.print();
+                    // };
+                });
+        }
+
+        // 페이지 로드 시 초기 근무현황표 생성
+        document.addEventListener('DOMContentLoaded', generateSchedule);
+    </script>
+
+</body>
+</html>
