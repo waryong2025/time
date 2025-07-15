@@ -37,7 +37,7 @@
         .controls input[type="radio"] {
             margin-left: 10px;
         }
-        .controls button {
+        .controls button, .controls a.button-link { /* 버튼과 링크 스타일 통일 */
             padding: 8px 15px; /* 버튼 패딩 조정 */
             background-color: #007bff;
             color: white;
@@ -46,8 +46,12 @@
             cursor: pointer;
             font-size: 15px; /* 버튼 폰트 크기 조정 */
             margin-right: 8px; /* 버튼 간 간격 추가 */
+            text-decoration: none; /* 링크 밑줄 제거 */
+            display: inline-block; /* 링크를 버튼처럼 보이게 */
+            text-align: center;
+            white-space: nowrap; /* 텍스트 줄바꿈 방지 */
         }
-        .controls button:hover {
+        .controls button:hover, .controls a.button-link:hover {
             background-color: #0056b3;
         }
         table {
@@ -98,6 +102,33 @@
             font-weight: bold;
             color: #cc0000;
         }
+        /* 셀 수정 모드 스타일 */
+        .edit-mode {
+            position: relative; /* 자식 요소의 위치 지정을 위해 */
+            padding: 0; /* 패딩 제거하여 입력 필드 공간 확보 */
+        }
+        .edit-mode input {
+            width: 100%; /* 입력 필드 너비 100% */
+            margin-bottom: 3px;
+            padding: 2px;
+            border: 1px solid #007bff;
+            box-sizing: border-box;
+            text-align: center; /* 입력 필드 텍스트 중앙 정렬 */
+        }
+        .edit-mode .cell-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 5px;
+        }
+        .edit-mode .cell-buttons button {
+            padding: 2px 5px;
+            font-size: 0.7em;
+            margin: 0 2px;
+        }
+        .name-entry {
+            display: block; /* 각 이름 엔트리를 블록 요소로 */
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -116,6 +147,8 @@
         <button onclick="generateSchedule()">근무현황표 생성</button>
         <button onclick="saveAsPdf()">PDF로 저장</button>
         <button onclick="printAsPdf()">A4로 인쇄</button>
+        <!-- 새로운 링크 추가 -->
+        <a href="https://waryong2025.github.io/townbus/" class="button-link" target="_blank">08번배차표</a>
     </div>
 
     <div id="scheduleContainer">
@@ -177,6 +210,94 @@
             return holidays2025.has(formattedDate);
         };
 
+        // 전역 스케줄 데이터 (수정 사항을 반영하기 위함)
+        // Key: "YYYY-MM-DD", Value: { "colId": ["오전명단", "오후명단"] }
+        let scheduleData = {};
+
+        // 셀 내용을 렌더링하는 함수 (배열을 받아 HTML로 변환)
+        const renderCellContent = (namesArray) => {
+            // 배열이 비어있거나, 두 요소 모두 빈 문자열인 경우 빈칸 반환
+            if (!namesArray || (namesArray[0] === '' && namesArray[1] === '')) {
+                return '';
+            }
+            let content = '';
+            // 첫 번째 요소 (오전)가 있으면 추가
+            if (namesArray[0]) {
+                content += `<span class="name-entry">${namesArray[0]}</span>`;
+            }
+            // 두 번째 요소 (오후)가 있으면 추가
+            if (namesArray[1]) {
+                // 첫 번째 요소가 있고 두 번째 요소도 있으면 줄바꿈 추가
+                if (content !== '') {
+                    content += '<br>';
+                }
+                content += `<span class="name-entry">${namesArray[1]}</span>`;
+            }
+            return content;
+        };
+
+        // 셀을 수정 모드로 변경하는 함수
+        function editCell(cellElement, colId, dateString) {
+            // 이미 수정 모드인 경우 중복 실행 방지
+            if (cellElement.classList.contains('edit-mode')) {
+                return;
+            }
+
+            // 셀에 data 속성 추가
+            cellElement.dataset.colId = colId;
+            cellElement.dataset.dateString = dateString;
+
+            cellElement.classList.add('edit-mode');
+            // scheduleData에서 현재 명단을 가져옵니다. 없으면 빈 배열로 초기화.
+            const currentNames = scheduleData[dateString] && scheduleData[dateString][colId] ? scheduleData[dateString][colId] : ['', ''];
+
+            cellElement.innerHTML = `
+                <input type="text" class="morning-input" value="${currentNames[0] || ''}" placeholder="오전 명단">
+                <input type="text" class="afternoon-input" value="${currentNames[1] || ''}" placeholder="오후 명단">
+                <div class="cell-buttons">
+                    <button onclick="saveCell(this.parentNode.parentNode)">저장</button>
+                    <button onclick="cancelEdit(this.parentNode.parentNode)">취소</button>
+                    <button onclick="cancelEdit(this.parentNode.parentNode)">닫기</button> <!-- 닫기 버튼을 취소와 동일하게 작동 -->
+                </div>
+            `;
+        }
+
+        // 수정된 셀 내용을 저장하는 함수
+        function saveCell(cellElement) {
+            const colId = cellElement.dataset.colId;
+            const dateString = cellElement.dataset.dateString;
+
+            const morningInput = cellElement.querySelector('.morning-input');
+            const afternoonInput = cellElement.querySelector('.afternoon-input');
+            
+            const newMorningName = morningInput.value.trim();
+            const newAfternoonName = afternoonInput.value.trim();
+
+            // scheduleData 초기화 (해당 날짜에 대한 데이터가 없으면)
+            if (!scheduleData[dateString]) {
+                scheduleData[dateString] = {};
+            }
+            
+            // 업데이트할 명단 배열 생성
+            let newNames = [newMorningName, newAfternoonName]; // 항상 두 요소를 포함하도록
+            
+            scheduleData[dateString][colId] = newNames; // scheduleData 업데이트
+
+            // 셀 다시 렌더링
+            cellElement.classList.remove('edit-mode');
+            cellElement.innerHTML = renderCellContent(newNames);
+        }
+
+        // 셀 수정 취소하는 함수 (닫기 버튼과 동일하게 작동)
+        function cancelEdit(cellElement) {
+            const colId = cellElement.dataset.colId;
+            const dateString = cellElement.dataset.dateString;
+
+            cellElement.classList.remove('edit-mode');
+            // scheduleData에 저장된 원래 명단을 가져와 렌더링
+            const originalNames = scheduleData[dateString] && scheduleData[dateString][colId] ? scheduleData[dateString][colId] : ['', ''];
+            cellElement.innerHTML = renderCellContent(originalNames);
+        }
 
         // 근무현황표를 생성하는 함수
         function generateSchedule() {
@@ -205,8 +326,10 @@
 
             // 기존 내용 초기화
             scheduleBody.innerHTML = '';
+            scheduleData = {}; // 스케줄 데이터 초기화 (새로운 표 생성 시)
 
             // 초기 근무자 배열 설정 (원본 파일의 7월 16일(수) 시작 상태)
+            // 이제 각 배열은 [오전명단, 오후명단] 형태를 가집니다.
             let initialNames3613 = ['강명희', '이미휴']; 
             let initialNames5537 = ['정형택', '이기용']; 
 
@@ -250,6 +373,7 @@
                 const dayOfWeek = currentDate.getDay(); // 0:일, 1:월, ..., 6:토
                 const dayName = getDayName(dayOfWeek);
                 const isHoliday = isPublicHoliday(currentDate); // 법정 공휴일 여부 확인
+                const dateString = currentDate.toISOString().slice(0, 10); // YYYY-MM-DD 형식으로 날짜 문자열 생성
 
                 // 매주 월요일마다 근무자 순서 변경
                 if (dayOfWeek === 1 && currentDate.getTime() > firstMondayOfCurrentPeriod.getTime()) {
@@ -268,44 +392,45 @@
                     rowClass = 'holiday'; 
                 }
 
-                let cell3613 = '';
-                let cell5518 = '';
-                let cell5537 = '';
-                let cell3612 = '';
-                let cell5536ho = '';
-                let cellEtc = '';
+                // 각 셀의 내용을 저장할 임시 객체
+                let cellsContent = {
+                    '3613': ['', ''], // 항상 두 요소를 가지도록 초기화
+                    '5518': ['', ''],
+                    '5537': ['', ''],
+                    '3612': ['', ''],
+                    '5536호': ['', ''],
+                    '기 타': ['', '']
+                };
 
                 // 일요일 또는 법정휴일인 경우 모든 칸 비움
                 if (dayOfWeek === 0 || isHoliday) { 
-                    cell3613 = '';
-                    cell5518 = '';
-                    cell5537 = '';
-                    cell3612 = '';
-                    cell5536ho = '';
+                    // 모든 칸이 비워짐 (기본값인 ['',''] 유지)
                 } else { // 평일 및 토요일
-                    cell3613 = currentNames3613.join('<br>');
-                    cell5518 = '권과장'; // 5518호는 권과장 고정
+                    cellsContent['3613'] = [...currentNames3613];
+                    cellsContent['5518'] = ['권과장', '']; // 5518호는 권과장 고정 (오후는 비움)
 
                     if (dayOfWeek === 6) { // 토요일 5537호는 특별 규칙 적용
-                        cell5537 = '오인중<br>정형택';
+                        cellsContent['5537'] = ['오인중', '정형택'];
                     } else { // 평일 5537호는 로테이션 적용
-                        cell5537 = currentNames5537.join('<br>');
+                        cellsContent['5537'] = [...currentNames5537];
                     }
 
-                    cell3612 = ''; // 3612호는 빈칸
-                    cell5536ho = ''; // 5536호는 빈칸
+                    // 3612호, 5536호, 기타는 빈칸 (기본값인 ['',''] 유지)
                 }
+
+                // scheduleData에 현재 날짜의 근무자 정보 저장
+                scheduleData[dateString] = cellsContent;
 
                 const row = `
                     <tr class="${rowClass}">
                         <td>${day}</td>
                         <td>${dayName}</td>
-                        <td>${cell3613}</td>
-                        <td>${cell5518}</td>
-                        <td>${cell5537}</td>
-                        <td>${cell3612}</td>
-                        <td>${cell5536ho}</td>
-                        <td>${cellEtc}</td>
+                        <td onclick="editCell(this, '3613', '${dateString}')">${renderCellContent(cellsContent['3613'])}</td>
+                        <td onclick="editCell(this, '5518', '${dateString}')">${renderCellContent(cellsContent['5518'])}</td>
+                        <td onclick="editCell(this, '5537', '${dateString}')">${renderCellContent(cellsContent['5537'])}</td>
+                        <td onclick="editCell(this, '3612', '${dateString}')">${renderCellContent(cellsContent['3612'])}</td>
+                        <td onclick="editCell(this, '5536호', '${dateString}')">${renderCellContent(cellsContent['5536호'])}</td>
+                        <td onclick="editCell(this, '기 타', '${dateString}')">${renderCellContent(cellsContent['기 타'])}</td>
                     </tr>
                 `;
                 scheduleBody.insertAdjacentHTML('beforeend', row);
@@ -329,6 +454,11 @@
             // 파일명에 특수문자 제거 및 공백을 언더스코어로 변경
             const filename = captionText.replace(/[^a-zA-Z0-9가-힣\s]/g, '').replace(/ /g, '_') + '.pdf'; 
 
+            // PDF 저장 전에 모든 셀의 수정 모드를 해제합니다. (취소와 동일하게 동작)
+            document.querySelectorAll('.edit-mode').forEach(cell => {
+                cancelEdit(cell); // cancelEdit 함수 호출
+            });
+
             html2pdf().set({ ...pdfOptions, filename: filename }).from(element).save();
         }
 
@@ -338,18 +468,17 @@
             const captionText = document.getElementById('tableCaption').textContent;
             const filename = captionText.replace(/[^a-zA-Z0-9가-힣\s]/g, '').replace(/ /g, '_') + '.pdf'; 
 
+            // PDF 인쇄 전에 모든 셀의 수정 모드를 해제합니다. (취소와 동일하게 동작)
+            document.querySelectorAll('.edit-mode').forEach(cell => {
+                cancelEdit(cell); // cancelEdit 함수 호출
+            });
+
             html2pdf().set({ ...pdfOptions, filename: filename })
                 .from(element)
                 .outputPdf('datauristring') // PDF 데이터를 Data URI 형태로 출력
                 .then(function(pdfDataUri) {
                     const newWindow = window.open(); // 새 창 열기
                     newWindow.document.write('<iframe width="100%" height="100%" src="' + pdfDataUri + '"></iframe>');
-                    // 새 창이 로드된 후 인쇄 다이얼로그를 자동으로 띄우려면 아래 주석을 해제할 수 있습니다.
-                    // 단, 일부 브라우저는 보안 정책 상 자동으로 인쇄 다이얼로그를 띄우는 것을 제한할 수 있습니다.
-                    // newWindow.onload = function() {
-                    //     newWindow.focus();
-                    //     newWindow.print();
-                    // };
                 });
         }
 
