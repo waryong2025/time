@@ -290,17 +290,17 @@
             const dateString = cellElement.dataset.dateString;
 
             const morningInput = cellElement.querySelector('.morning-input');
-            const afternoonInput = cellElement.querySelector('.after-input'); // 수정: afternoon-input으로 변경해야 합니다.
+            const afternoonInput = cellElement.querySelector('.afternoon-input'); // Corrected: changed from .after-input to .afternoon-input
 
             const newMorningName = morningInput.value.trim();
-            const newAfternoonName = afternoonInput ? afternoonInput.value.trim() : ''; // afternoonInput이 없을 경우 대비
-                        
+            const newAfternoonName = afternoonInput ? afternoonInput.value.trim() : '';
+                                
             if (!scheduleData[dateString]) {
                 scheduleData[dateString] = {};
             }
-                        
+                                
             let newNames = [newMorningName, newAfternoonName];
-                        
+                                
             scheduleData[dateString][colId] = newNames;
 
             cellElement.classList.remove('edit-mode');
@@ -397,7 +397,7 @@
                 currentNames3613.reverse();
                 currentNames5537.reverse();
             }
-                        
+                                
             // 근무 현황 생성 루프
             let currentDate = new Date(startDate);
             while (currentDate.getTime() <= endDate.getTime()) { 
@@ -438,18 +438,20 @@
                 if (dayOfWeek === 0 || isHoliday) { 
                     // 모든 칸이 비워짐 (기본값인 ['',''] 유지)
                 } else { // 평일 및 토요일
-                    cellsContent['3613'] = [...currentNames3613];
+                    // 오전/오후 명단을 서로 바꿈
+                    cellsContent['3613'] = [currentNames3613[1], currentNames3613[0]];
                     
                     if (dayOfWeek === 6) { // 토요일
-                        cellsContent['5518'] = ['변민재', '']; // 5518호 토요일은 '변민재'
+                        cellsContent['5518'] = ['변민재', '']; 
                     } else { // 평일
-                        cellsContent['5518'] = ['권과장', '']; // 5518호 평일은 '권과장'
+                        cellsContent['5518'] = ['권과장', '']; 
                     }
 
                     if (dayOfWeek === 6) { // 토요일 5537호는 특별 규칙 적용
                         cellsContent['5537'] = ['오인중', '정형택'];
                     } else { // 평일 5537호는 로테이션 적용
-                        cellsContent['5537'] = [...currentNames5537];
+                        // 오전/오후 명단을 서로 바꿈
+                        cellsContent['5537'] = [currentNames5537[1], currentNames5537[0]];
                     }
 
                     // 3612호, 5536호, 기타는 빈칸 (기본값인 ['',''] 유지)
@@ -532,4 +534,3 @@
     </script>
 </body>
 </html>
-
