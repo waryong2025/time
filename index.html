@@ -18,8 +18,9 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin-bottom: 15px;
             display: flex;
-            align-items: center;
+            flex-wrap: wrap;
             gap: 10px;
+            align-items: center;
         }
         .controls label {
             font-weight: bold;
@@ -45,6 +46,7 @@
             font-size: 15px;
             margin-right: 8px;
             text-decoration: none;
+            display: inline-block;
             text-align: center;
             white-space: nowrap;
         }
@@ -56,10 +58,10 @@
             padding: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin: 20px auto;
-            width: fit-content;
+            width: 27.7cm;
         }
         table {
-            width: 19.0cm;
+            width: 27.7cm;
             border-collapse: collapse;
             margin: 0 auto;
             font-size: 0.75em;
@@ -80,14 +82,14 @@
             background-color: #f2f2f2;
             font-weight: bold;
         }
-        th:nth-child(6), td:nth-child(6) { width: 3.0cm; } /* 5536호 위치 */
-        th:nth-child(7), td:nth-child(7) { width: 3.0cm; } /* 3612 위치 */
-        th:nth-child(1), td:nth-child(1) { width: 1.8cm; }
-        th:nth-child(2), td:nth-child(2) { width: 1.8cm; }
-        th:nth-child(3), td:nth-child(3) { width: 3.0cm; }
-        th:nth-child(4), td:nth-child(4) { width: 3.0cm; }
-        th:nth-child(5), td:nth-child(5) { width: 3.5cm; }
-        th:nth-child(8), td:nth-child(8) { width: 3.0cm; }
+        th:nth-child(1), td:nth-child(1) { width: 2.5cm; }
+        th:nth-child(2), td:nth-child(2) { width: 2.5cm; }
+        th:nth-child(3), td:nth-child(3) { width: 3.8cm; }
+        th:nth-child(4), td:nth-child(4) { width: 3.8cm; }
+        th:nth-child(5), td:nth-child(5) { width: 3.8cm; }
+        th:nth-child(6), td:nth-child(6) { width: 3.8cm; }
+        th:nth-child(7), td:nth-child(7) { width: 3.8cm; }
+        th:nth-child(8), td:nth-child(8) { width: 3.8cm; }
         caption {
             font-size: 1.2em;
             margin-bottom: 10px;
@@ -97,6 +99,9 @@
         }
         .sunday {
             background-color: #ffe0e0;
+        }
+        .saturday {
+            background-color: #e0e0ff;
         }
         .holiday {
             background-color: #ffcccc;
@@ -144,12 +149,12 @@
         .edit-mode .cell-buttons button:hover {
             background-color: #5a6268;
         }
-        .edit-mode .cell-buttons button:first-child {
-            background-color: #28a745;
-        }
-        .edit-mode .cell-buttons button:first-child:hover {
-            background-color: #218838;
-        }
+        .edit-mode .cell-buttons .btn-fixed { background-color: #28a745; }
+        .edit-mode .cell-buttons .btn-fixed:hover { background-color: #218838; }
+        .edit-mode .cell-buttons .btn-temp { background-color: #ffc107; }
+        .edit-mode .cell-buttons .btn-temp:hover { background-color: #e0a800; }
+        .edit-mode .cell-buttons .btn-cancel { background-color: #dc3545; }
+        .edit-mode .cell-buttons .btn-cancel:hover { background-color: #c82333; }
         .name-entry {
             display: block;
             text-align: center;
@@ -158,166 +163,323 @@
 </head>
 <body>
     <div class="controls">
+        <label for="yearInput">년:</label>
+        <input type="number" id="yearInput" value="2025" min="2000" max="2100">
+        <label for="monthInput">월:</label>
+        <input type="number" id="monthInput" value="9" min="1" max="12">
+        <input type="radio" id="option1" name="displayOption" value="1" checked>
+        <label for="option1">1일 ~ 15일</label>
+        <input type="radio" id="option2" name="displayOption" value="2">
+        <label for="option2">16일 ~ 말일</label>
         <button onclick="generateSchedule()">근무현황표 생성</button>
         <button onclick="saveAsPdf()">PDF로 저장</button>
         <button onclick="printAsPdf()">A4로 인쇄</button>
+        <a href="https://waryong2025.github.io/timeman/" class="button-link" target="_blank">07번 배차표</a>
+        <a href="https://waryong2025.github.io/townbus/" class="button-link" target="_blank">08번배차표</a>
     </div>
-    <div id="scheduleContainer">
+    <div id="scheduleContainer" style="background-color: white; padding: 10px;">
         <table>
-            <caption id="tableCaption">종로 07번 2025년 09월 1일 ~ 15일까지 근무현황표</caption>
+            <caption id="tableCaption">종로 07번 2025년 9월 1일 ~ 15일까지 근무현황표</caption>
             <thead>
                 <tr>
                     <th>월일</th>
                     <th>요일</th>
                     <th>3613</th>
-                    <th>5518</th>
-                    <th>5537</th>
-                    <th>5536호</th>
                     <th>3612</th>
+                    <th>5536호</th>
+                    <th>5537</th>
+                    <th>5518</th>
                     <th>기 타</th>
                 </tr>
             </thead>
-            <tbody id="scheduleBody"></tbody>
+            <tbody id="scheduleBody">
+            </tbody>
         </table>
     </div>
     <script>
-        const getDayName = d => ['일','월','화','수','목','금','토'][d];
-        const getLastDayOfMonth = (y,m) => new Date(y, m, 0).getDate();
-        const isPublicHoliday = date => {
-            const y = date.getFullYear(), mm = String(date.getMonth()+1).padStart(2,'0'), dd = String(date.getDate()).padStart(2,'0');
-            return new Set([
-                "2025-01-01","2025-01-28","2025-01-29","2025-01-30","2025-03-01","2025-05-05","2025-06-02",
-                "2025-06-06","2025-08-15","2025-10-03","2025-10-06","2025-10-09","2025-12-25"
-            ]).has(`${y}-${mm}-${dd}`);
-        };
+        // **수정**: localStorage에서 고정 데이터를 불러오거나, 없으면 빈 객체로 시작
+        let fixedScheduleData = JSON.parse(localStorage.getItem('jongro07FixedSchedule')) || {};
+        
+        // 임시 스케줄 데이터 (페이지 로딩 시점에만 유효)
         let scheduleData = {};
 
-        const renderCellContent = arr => {
-            if (!arr || (!arr[0] && !arr[1])) return '';
-            return [arr[0]?`<span class="name-entry">${arr[0]}</span>`:'', arr[1]?`<br><span class="name-entry">${arr[1]}</span>`:''].join('');
+        const getDayName = (dayIndex) => {
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            return days[dayIndex];
         };
 
-        function editCell(cell, colId, ds) {
-            if (cell.classList.contains('edit-mode')) return;
-            const curr = scheduleData[ds] && scheduleData[ds][colId] ? scheduleData[ds][colId] : ['',''];
-            cell.dataset.originalContent = JSON.stringify(curr);
-            cell.dataset.colId = colId;
-            cell.dataset.dateString = ds;
-            cell.classList.add('edit-mode');
-            cell.innerHTML = `
-                <input type="text" class="morning-input" value="${curr[0]}" placeholder="오전 명단">
-                <input type="text" class="afternoon-input" value="${curr[1]}" placeholder="오후 명단">
+        const getLastDayOfMonth = (year, month) => {
+            return new Date(year, month, 0).getDate();
+        };
+
+        const isPublicHoliday = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+
+            const holidays2025 = new Set([
+                "2025-01-01", "2025-01-28", "2025-01-29", "2025-01-30",
+                "2025-03-01", "2025-05-05", "2025-06-02", "2025-06-06",
+                "2025-08-15", "2025-10-03", "2025-10-06", "2025-10-09",
+                "2025-12-25"
+            ]);
+
+            return holidays2025.has(formattedDate);
+        };
+
+        const renderCellContent = (namesArray) => {
+            if (!namesArray || (namesArray[0] === '' && namesArray[1] === '')) {
+                return '';
+            }
+            let content = '';
+            if (namesArray[0]) {
+                content += `<span class="name-entry">${namesArray[0]}</span>`;
+            }
+            if (namesArray[1]) {
+                if (content !== '') {
+                    content += '<br>';
+                }
+                content += `<span class="name-entry">${namesArray[1]}</span>`;
+            }
+            return content;
+        };
+
+        function editCell(cellElement, colId, dateString) {
+            if (cellElement.classList.contains('edit-mode')) {
+                return;
+            }
+
+            const currentNames = (scheduleData[dateString] && scheduleData[dateString][colId]) || 
+                                 (fixedScheduleData[dateString] && fixedScheduleData[dateString][colId]) || 
+                                 ['', ''];
+            
+            cellElement.dataset.colId = colId;
+            cellElement.dataset.dateString = dateString;
+
+            cellElement.classList.add('edit-mode');
+            
+            cellElement.innerHTML = `
+                <input type="text" class="morning-input" value="${currentNames[0] || ''}" placeholder="오전 명단">
+                <input type="text" class="afternoon-input" value="${currentNames[1] || ''}" placeholder="오후 명단">
                 <div class="cell-buttons">
-                    <button onclick="saveCell(this.parentNode.parentNode)">저장</button>
-                    <button onclick="cancelEdit(this.parentNode.parentNode)">취소</button>
-                </div>`;
+                    <button class="btn-fixed" onclick="saveFixedCell(this.parentNode.parentNode)">고정</button>
+                    <button class="btn-temp" onclick="saveTempCell(this.parentNode.parentNode)">임시</button>
+                    <button class="btn-cancel" onclick="resetCell(this.parentNode.parentNode)">초기화</button>
+                </div>
+            `;
         }
 
-        function saveCell(cell) {
-            const col = cell.dataset.colId, ds = cell.dataset.dateString;
-            const a = cell.querySelector('.morning-input').value.trim(), b = cell.querySelector('.afternoon-input').value.trim()||'';
-            if (!scheduleData[ds]) scheduleData[ds] = {};
-            scheduleData[ds][col] = [a,b];
-            cell.classList.remove('edit-mode');
-            cell.innerHTML = renderCellContent([a,b]);
-            delete cell.dataset.originalContent;
+        function getNamesFromInput(cellElement) {
+            const morningInput = cellElement.querySelector('.morning-input');
+            const afternoonInput = cellElement.querySelector('.afternoon-input');
+            const newMorningName = morningInput.value.trim();
+            const newAfternoonName = afternoonInput ? afternoonInput.value.trim() : '';
+            return [newMorningName, newAfternoonName];
         }
 
-        function cancelEdit(cell) {
-            const col = cell.dataset.colId, ds = cell.dataset.dateString;
-            const orig = cell.dataset.originalContent ? JSON.parse(cell.dataset.originalContent) : ['',''];
-            if (!scheduleData[ds]) scheduleData[ds] = {};
-            scheduleData[ds][col] = orig;
-            cell.classList.remove('edit-mode');
-            cell.innerHTML = renderCellContent(orig);
-            delete cell.dataset.originalContent;
+        function saveFixedCell(cellElement) {
+            const colId = cellElement.dataset.colId;
+            const dateString = cellElement.dataset.dateString;
+            const newNames = getNamesFromInput(cellElement);
+
+            if (!fixedScheduleData[dateString]) {
+                fixedScheduleData[dateString] = {};
+            }
+            fixedScheduleData[dateString][colId] = newNames;
+
+            // **수정**: 변경된 고정 데이터를 localStorage에 저장
+            localStorage.setItem('jongro07FixedSchedule', JSON.stringify(fixedScheduleData));
+
+            // 임시 데이터에도 반영하여 즉시 표시
+            if (!scheduleData[dateString]) {
+                scheduleData[dateString] = {};
+            }
+            scheduleData[dateString][colId] = newNames;
+
+            cellElement.classList.remove('edit-mode');
+            cellElement.innerHTML = renderCellContent(newNames);
+        }
+
+        function saveTempCell(cellElement) {
+            const colId = cellElement.dataset.colId;
+            const dateString = cellElement.dataset.dateString;
+            const newNames = getNamesFromInput(cellElement);
+
+            if (!scheduleData[dateString]) {
+                scheduleData[dateString] = {};
+            }
+            scheduleData[dateString][colId] = newNames;
+            
+            cellElement.classList.remove('edit-mode');
+            cellElement.innerHTML = renderCellContent(newNames);
+        }
+
+        function resetCell(cellElement) {
+            const colId = cellElement.dataset.colId;
+            const dateString = cellElement.dataset.dateString;
+
+            // 고정 데이터에서 해당 셀 정보 삭제
+            if (fixedScheduleData[dateString] && fixedScheduleData[dateString][colId]) {
+                delete fixedScheduleData[dateString][colId];
+            }
+            // 임시 데이터는 generateSchedule() 호출 시 자동으로 초기화됨
+
+            // **수정**: 변경된 고정 데이터를 localStorage에 저장
+            localStorage.setItem('jongro07FixedSchedule', JSON.stringify(fixedScheduleData));
+
+            // 스케줄을 다시 생성하여 원래 값으로 복원
+            generateSchedule();
         }
 
         function generateSchedule() {
-            const year=2025, month=9; // 고정
+            const year = parseInt(document.getElementById('yearInput').value);
+            const month = parseInt(document.getElementById('monthInput').value);
+            const selectedOption = document.querySelector('input[name="displayOption"]:checked').value;
             const scheduleBody = document.getElementById('scheduleBody');
             const tableCaption = document.getElementById('tableCaption');
-            const sd = new Date(year, month-1, 1), ed = new Date(year, month-1, getLastDayOfMonth(year, month));
-            sd.setHours(0,0,0,0); ed.setHours(0,0,0,0);
-            tableCaption.textContent = `종로 07번 ${year}년 ${month}월 ${sd.getDate()}일 ~ ${ed.getDate()}일까지 근무현황표`;
-            scheduleBody.innerHTML = ''; scheduleData = {};
-            const init3613=['강명희','이미휴'], init5537=['정형택','이기용'];
-            const base = new Date(2025,6,16), frMon = new Date(2025,6,21);
-            base.setHours(0,0,0,0); frMon.setHours(0,0,0,0);
-            let fMonCur = new Date(sd);
-            const w = fMonCur.getDay(), ds = (w===0?6:w-1);
-            fMonCur.setDate(fMonCur.getDate()-ds); fMonCur.setHours(0,0,0,0);
-            let weeks = 0;
-            if (fMonCur.getTime() >= frMon.getTime()) weeks = Math.floor((fMonCur.getTime()-frMon.getTime())/(1000*60*60*24*7));
-            let cur3613=[...init3613], cur5537=[...init5537];
-            if (weeks%2!==0) { cur3613.reverse(); cur5537.reverse(); }
-            let d=new Date(sd);
-            while (d.getTime()<=ed.getTime()) {
-                const day=d.getDate(), dow=d.getDay(), dn=getDayName(dow), hol=isPublicHoliday(d), dsStr=d.toISOString().slice(0,10);
-                if (dow===1 && d.getTime()>fMonCur.getTime()) {
-                    cur3613.reverse(); cur5537.reverse();
-                    fMonCur=new Date(d); fMonCur.setHours(0,0,0,0);
-                }
-                let rc='';
-                if (dow===0) rc='sunday';
-                else if (hol) rc='holiday';
-                const cc={
-                    '3613':['',''], '5518':['',''], '5537':['',''], '5536호':['',''], '3612':['',''], '기 타':['','']
+
+            // 임시 데이터는 항상 초기화
+            scheduleData = {};
+
+            let startDate, endDate;
+            if (selectedOption === '1') {
+                startDate = new Date(year, month - 1, 1);
+                endDate = new Date(year, month - 1, 15);
+            } else {
+                startDate = new Date(year, month - 1, 16);
+                endDate = new Date(year, month - 1, getLastDayOfMonth(year, month));
+            }
+
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(0, 0, 0, 0);
+
+            tableCaption.textContent = `종로 07번 ${year}년 ${month}월 ${startDate.getDate()}일 ~ ${endDate.getDate()}일까지 근무현황표`;
+            scheduleBody.innerHTML = '';
+
+            const baseDate = new Date(2025, 8, 1); // 9월 1일 기준
+            baseDate.setHours(0, 0, 0, 0);
+            
+            let currentDate = new Date(startDate);
+            
+            while (currentDate.getTime() <= endDate.getTime()) {
+                const day = currentDate.getDate();
+                const dayOfWeek = currentDate.getDay();
+                const dayName = getDayName(dayOfWeek);
+                const isHoliday = isPublicHoliday(currentDate);
+                const dateString = currentDate.toISOString().slice(0, 10);
+
+                let cellsContent = {
+                    '3613': ['', ''], '3612': ['', ''], '5536호': ['', ''],
+                    '5537': ['', ''], '5518': ['', ''], '기 타': ['', '']
                 };
-                if (!(dow===0||hol)) {
-                    cc['3613']=[cur3613[1],cur3613[0]];
-                    cc['5518'] = dow===6?['변민재','']:['권과장',''];
-                    cc['5537'] = dow===6?['오인중','정형택']:[cur5537[1],cur5537[0]];
-                    // 5536호 지정 (2025년9월 기준)
-                    if (d.getFullYear()===2025 && d.getMonth()>=8) {
-                        cc['5536호']=['최창희','송명석'];
+
+                // 1. 기본 로테이션 및 규칙 적용
+                if (!(dayOfWeek === 0 || isHoliday)) {
+                    let firstMondayOfCurrentWeek = new Date(currentDate);
+                    const dayOfWeekForRotation = firstMondayOfCurrentWeek.getDay();
+                    const daysToSubtract = (dayOfWeekForRotation === 0) ? 6 : dayOfWeekForRotation - 1;
+                    firstMondayOfCurrentWeek.setDate(firstMondayOfCurrentWeek.getDate() - daysToSubtract);
+                    firstMondayOfCurrentWeek.setHours(0, 0, 0, 0);
+
+                    const diffTime = firstMondayOfCurrentWeek.getTime() - baseDate.getTime();
+                    let weeksPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+                    
+                    let initialNames3613 = ['강명희', '이미휴'];
+                    let initialNames5537 = ['정형택', '이기용'];
+                    let initialNames5536 = ['최창희', '송명석'];
+
+                    if (weeksPassed % 2 !== 0) {
+                        initialNames3613.reverse();
+                        initialNames5537.reverse();
+                        initialNames5536.reverse();
                     }
+
+                    cellsContent['3613'] = initialNames3613;
+                    cellsContent['5536호'] = initialNames5536;
+                    cellsContent['5537'] = initialNames5537;
+                    cellsContent['5518'] = (dayOfWeek === 6) ? ['김영환', ''] : ['권과장', ''];
                 }
-                scheduleData[dsStr]=cc;
-                const row=`
-                    <tr class="${rc}">
+
+                // 2. 고정 데이터가 있다면 기본값을 덮어쓰기
+                if (fixedScheduleData[dateString]) {
+                    Object.assign(cellsContent, fixedScheduleData[dateString]);
+                }
+                
+                scheduleData[dateString] = cellsContent;
+
+                let rowClass = '';
+                if (dayOfWeek === 0) rowClass = 'sunday';
+                else if (dayOfWeek === 6) rowClass = 'saturday';
+                else if (isHoliday) rowClass = 'holiday';
+
+                const row = `
+                    <tr class="${rowClass}">
                         <td>${day}</td>
-                        <td>${dn}</td>
-                        <td onclick="editCell(this,'3613','${dsStr}')">${renderCellContent(cc['3613'])}</td>
-                        <td onclick="editCell(this,'5518','${dsStr}')">${renderCellContent(cc['5518'])}</td>
-                        <td onclick="editCell(this,'5537','${dsStr}')">${renderCellContent(cc['5537'])}</td>
-                        <td onclick="editCell(this,'5536호','${dsStr}')">${renderCellContent(cc['5536호'])}</td>
-                        <td onclick="editCell(this,'3612','${dsStr}')">${renderCellContent(cc['3612'])}</td>
-                        <td onclick="editCell(this,'기 타','${dsStr}')">${renderCellContent(cc['기 타'])}</td>
-                    </tr>`;
-                scheduleBody.insertAdjacentHTML('beforeend',row);
-                d.setDate(d.getDate()+1);
+                        <td>${dayName}</td>
+                        <td onclick="editCell(this, '3613', '${dateString}')">${renderCellContent(cellsContent['3613'])}</td>
+                        <td onclick="editCell(this, '3612', '${dateString}')">${renderCellContent(cellsContent['3612'])}</td>
+                        <td onclick="editCell(this, '5536호', '${dateString}')">${renderCellContent(cellsContent['5536호'])}</td>
+                        <td onclick="editCell(this, '5537', '${dateString}')">${renderCellContent(cellsContent['5537'])}</td>
+                        <td onclick="editCell(this, '5518', '${dateString}')">${renderCellContent(cellsContent['5518'])}</td>
+                        <td onclick="editCell(this, '기 타', '${dateString}')">${renderCellContent(cellsContent['기 타'])}</td>
+                    </tr>
+                `;
+                scheduleBody.insertAdjacentHTML('beforeend', row);
+
+                currentDate.setDate(currentDate.getDate() + 1);
             }
         }
 
         const pdfOptions = {
-            margin:[10,10,10,10],
-            image:{type:'jpeg',quality:0.98},
-            html2canvas:{scale:1.0, logging:false, dpi:192, letterRendering:true, background:'#ffffff'},
-            jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+            margin: [10, 10, 10, 10],
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+                scale: 1.0, logging: false, dpi: 192,
+                letterRendering: true, background: '#ffffff'
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         };
 
-        function saveAsPdf(){
-            document.querySelectorAll('.edit-mode').forEach(cancelEdit);
-            const el=document.getElementById('scheduleContainer');
-            const fn=document.getElementById('tableCaption').textContent.replace(/[^a-zA-Z0-9가-힣\s]/g,'').replace(/ /g,'_')+'.pdf';
-            html2pdf().set({...pdfOptions,filename:fn}).from(el).save();
+        function saveAsPdf() {
+            const element = document.getElementById('scheduleContainer');
+            const captionText = document.getElementById('tableCaption').textContent;
+            const filename = captionText.replace(/[^a-zA-Z0-9가-힣\s]/g, '').replace(/ /g, '_') + '.pdf';
+
+            document.querySelectorAll('.edit-mode').forEach(cell => {
+                const colId = cell.dataset.colId;
+                const dateString = cell.dataset.dateString;
+                cell.classList.remove('edit-mode');
+                cell.innerHTML = renderCellContent(scheduleData[dateString][colId]);
+            });
+
+            html2pdf().set({ ...pdfOptions, filename: filename }).from(element).save();
         }
 
-        function printAsPdf(){
-            document.querySelectorAll('.edit-mode').forEach(cancelEdit);
-            const el=document.getElementById('scheduleContainer');
-            const fn=document.getElementById('tableCaption').textContent.replace(/[^a-zA-Z0-9가-힣\s]/g,'').replace(/ /g,'_')+'.pdf';
-            html2pdf().set({...pdfOptions,filename:fn})
-                .from(el).outputPdf('datauristring')
-                .then(uri=>{
-                    const w=window.open();
-                    w.document.write('<iframe width="100%" height="100%" src="'+uri+'"></iframe>');
+        function printAsPdf() {
+            const element = document.getElementById('scheduleContainer');
+            const captionText = document.getElementById('tableCaption').textContent;
+            const filename = captionText.replace(/[^a-zA-Z0-9가-힣\s]/g, '').replace(/ /g, '_') + '.pdf';
+            
+            document.querySelectorAll('.edit-mode').forEach(cell => {
+                const colId = cell.dataset.colId;
+                const dateString = cell.dataset.dateString;
+                cell.classList.remove('edit-mode');
+                cell.innerHTML = renderCellContent(scheduleData[dateString][colId]);
+            });
+
+            html2pdf().set({ ...pdfOptions, filename: filename })
+                .from(element)
+                .outputPdf('datauristring')
+                .then(function(pdfDataUri) {
+                    const newWindow = window.open();
+                    newWindow.document.write('<iframe width="100%" height="100%" src="' + pdfDataUri + '"></iframe>');
                 });
         }
-
+        
         document.addEventListener('DOMContentLoaded', generateSchedule);
+        window.onload = generateSchedule;
+
     </script>
 </body>
 </html>
-  
