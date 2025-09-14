@@ -130,9 +130,16 @@
         .edit-mode .cell-buttons button.btn-cancel { background-color: #dc3545; }
         .name-entry { display: block; margin-top: 2px; margin-bottom: 2px; }
 
+        /* 인쇄 모드 */
         @media print {
-            body { background-color: white; margin: 0; padding: 0; }
-            .controls { display: none; }
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+            .controls {
+                display: none; /* 버튼 영역 숨김 */
+            }
             #scheduleContainer {
                 box-shadow: none;
                 margin: 0;
@@ -141,7 +148,9 @@
             table {
                 width: 100%;
                 font-size: 0.6em;
-                page-break-inside: auto;
+                border: 1px solid #000;
+                transform: scale(0.9);  /* 표 크기 축소 */
+                transform-origin: top left;
             }
             th, td {
                 padding: 2px;
@@ -193,58 +202,42 @@
                     <th>기 타</th>
                 </tr>
             </thead>
-            <tbody id="scheduleBody">
-            </tbody>
+            <tbody id="scheduleBody"></tbody>
         </table>
     </div>
     <script>
         let fixedScheduleData = JSON.parse(localStorage.getItem('jongro07FixedSchedule')) || {};
         let scheduleData = {};
         
-        const getDayName = (dayIndex) => {
-            const days = ['일', '월', '화', '수', '목', '금', '토'];
-            return days[dayIndex];
-        };
-
-        const getLastDayOfMonth = (year, month) => {
-            return new Date(year, month, 0).getDate();
-        };
+        const getDayName = (dayIndex) => ['일','월','화','수','목','금','토'][dayIndex];
+        const getLastDayOfMonth = (year, month) => new Date(year, month, 0).getDate();
 
         const isPublicHoliday = (date) => {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const formattedDate = `${year}-${month}-${day}`;
-
             const holidays2025 = new Set([
-                "2025-01-01", "2025-01-28", "2025-01-29", "2025-01-30",
-                "2025-03-01", "2025-05-05", "2025-06-02", "2025-06-06",
-                "2025-08-15", "2025-10-03", "2025-10-06", "2025-10-09",
+                "2025-01-01","2025-01-28","2025-01-29","2025-01-30",
+                "2025-03-01","2025-05-05","2025-06-02","2025-06-06",
+                "2025-08-15","2025-10-03","2025-10-06","2025-10-09",
                 "2025-12-25"
             ]);
-
             return holidays2025.has(formattedDate);
         };
 
         const renderCellContent = (namesArray) => {
-            if (!namesArray || (namesArray[0] === '' && namesArray[1] === '')) {
-                return '';
-            }
+            if (!namesArray || (namesArray[0] === '' && namesArray[1] === '')) return '';
             return namesArray.filter(name => name).map(name => `<span class="name-entry">${name}</span>`).join('<br>');
         };
 
         function editCell(cellElement, colId, dateString) {
-            if (cellElement.classList.contains('edit-mode')) {
-                return;
-            }
+            if (cellElement.classList.contains('edit-mode')) return;
             const currentNames = (scheduleData[dateString] && scheduleData[dateString][colId]) || 
-                                 (fixedScheduleData[dateString] && fixedScheduleData[dateString][colId]) || 
-                                 ['', ''];
-            
+                                 (fixedScheduleData[dateString] && fixedScheduleData[dateString][colId]) || ['', ''];
             cellElement.dataset.colId = colId;
             cellElement.dataset.dateString = dateString;
             cellElement.classList.add('edit-mode');
-            
             cellElement.innerHTML = `
                 <input type="text" class="morning-input" value="${currentNames[0] || ''}" placeholder="오전 명단">
                 <input type="text" class="afternoon-input" value="${currentNames[1] || ''}" placeholder="오후 명단">
@@ -252,59 +245,39 @@
                     <button class="btn-fixed" onclick="saveFixedCell(this.parentNode.parentNode)">고정</button>
                     <button class="btn-temp" onclick="saveTempCell(this.parentNode.parentNode)">임시</button>
                     <button class="btn-cancel" onclick="resetCell(this.parentNode.parentNode)">초기화</button>
-                </div>
-            `;
+                </div>`;
         }
 
         function getNamesFromInput(cellElement) {
             const morningInput = cellElement.querySelector('.morning-input');
             const afternoonInput = cellElement.querySelector('.afternoon-input');
-            const newMorningName = morningInput.value.trim();
-            const newAfternoonName = afternoonInput ? afternoonInput.value.trim() : '';
-            return [newMorningName, newAfternoonName];
+            return [morningInput.value.trim(), afternoonInput.value.trim()];
         }
 
         function saveFixedCell(cellElement) {
-            const colId = cellElement.dataset.colId;
-            const dateString = cellElement.dataset.dateString;
+            const colId = cellElement.dataset.colId, dateString = cellElement.dataset.dateString;
             const newNames = getNamesFromInput(cellElement);
-
-            if (!fixedScheduleData[dateString]) {
-                fixedScheduleData[dateString] = {};
-            }
+            if (!fixedScheduleData[dateString]) fixedScheduleData[dateString] = {};
             fixedScheduleData[dateString][colId] = newNames;
             localStorage.setItem('jongro07FixedSchedule', JSON.stringify(fixedScheduleData));
-
-            if (!scheduleData[dateString]) {
-                scheduleData[dateString] = {};
-            }
+            if (!scheduleData[dateString]) scheduleData[dateString] = {};
             scheduleData[dateString][colId] = newNames;
-
             cellElement.classList.remove('edit-mode');
             cellElement.innerHTML = renderCellContent(newNames);
         }
 
         function saveTempCell(cellElement) {
-            const colId = cellElement.dataset.colId;
-            const dateString = cellElement.dataset.dateString;
+            const colId = cellElement.dataset.colId, dateString = cellElement.dataset.dateString;
             const newNames = getNamesFromInput(cellElement);
-
-            if (!scheduleData[dateString]) {
-                scheduleData[dateString] = {};
-            }
+            if (!scheduleData[dateString]) scheduleData[dateString] = {};
             scheduleData[dateString][colId] = newNames;
-            
             cellElement.classList.remove('edit-mode');
             cellElement.innerHTML = renderCellContent(newNames);
         }
 
         function resetCell(cellElement) {
-            const colId = cellElement.dataset.colId;
-            const dateString = cellElement.dataset.dateString;
-
-            if (fixedScheduleData[dateString] && fixedScheduleData[dateString][colId]) {
-                delete fixedScheduleData[dateString][colId];
-            }
+            const colId = cellElement.dataset.colId, dateString = cellElement.dataset.dateString;
+            if (fixedScheduleData[dateString] && fixedScheduleData[dateString][colId]) delete fixedScheduleData[dateString][colId];
             localStorage.setItem('jongro07FixedSchedule', JSON.stringify(fixedScheduleData));
             generateSchedule();
         }
@@ -315,9 +288,7 @@
             const selectedOption = document.querySelector('input[name="displayOption"]:checked').value;
             const scheduleBody = document.getElementById('scheduleBody');
             const tableCaption = document.getElementById('tableCaption');
-
             scheduleData = {};
-
             let startDate, endDate;
             if (selectedOption === '1') {
                 startDate = new Date(year, month - 1, 1);
@@ -326,73 +297,30 @@
                 startDate = new Date(year, month - 1, 16);
                 endDate = new Date(year, month - 1, getLastDayOfMonth(year, month));
             }
-
-            startDate.setHours(0, 0, 0, 0);
-            endDate.setHours(0, 0, 0, 0);
-
+            startDate.setHours(0,0,0,0); endDate.setHours(0,0,0,0);
             tableCaption.textContent = `종로 07번 ${year}년 ${month}월 ${startDate.getDate()}일 ~ ${endDate.getDate()}일까지 근무현황표`;
             scheduleBody.innerHTML = '';
-
-            const baseDate = new Date(2025, 8, 1);
-            baseDate.setHours(0, 0, 0, 0);
-            
+            const baseDate = new Date(2025, 8, 1); baseDate.setHours(0,0,0,0);
             let currentDate = new Date(startDate);
-            
             while (currentDate.getTime() <= endDate.getTime()) {
-                const day = currentDate.getDate();
-                const dayOfWeek = currentDate.getDay();
-                const dayName = getDayName(dayOfWeek);
+                const day = currentDate.getDate(), dayOfWeek = currentDate.getDay(), dayName = getDayName(dayOfWeek);
                 const isHoliday = isPublicHoliday(currentDate);
                 const dateString = currentDate.toISOString().slice(0, 10);
-
-                let cellsContent = {
-                    '3613': ['', ''], '5536호': ['', ''], '5537': ['', ''],
-                    '3612': ['', ''], '5518': ['', ''], '기 타': ['', '']
-                };
-
-                if (!(dayOfWeek === 0 || isHoliday)) {
-                    let firstMondayOfCurrentWeek = new Date(currentDate);
-                    const dayOfWeekForRotation = firstMondayOfCurrentWeek.getDay();
-                    const daysToSubtract = (dayOfWeekForRotation === 0) ? 6 : dayOfWeekForRotation - 1;
-                    firstMondayOfCurrentWeek.setDate(firstMondayOfCurrentWeek.getDate() - daysToSubtract);
-                    firstMondayOfCurrentWeek.setHours(0, 0, 0, 0);
-
-                    const diffTime = firstMondayOfCurrentWeek.getTime() - baseDate.getTime();
-                    let weeksPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
-                    
-                    let initialNames3613 = ['이미휴', '강명희']; 
-                    let initialNames5537 = ['이기용', '정형택'];
-                    let initialNames5536 = ['최창희', '송명석'];
-
-                    if (weeksPassed % 2 !== 0) {
-                        initialNames3613.reverse();
-                        initialNames5537.reverse();
-                        initialNames5536.reverse();
-                    }
-
-                    cellsContent['3613'] = initialNames3613;
-                    cellsContent['5536호'] = initialNames5536;
-                    
-                    if (dayOfWeek === 6) {
-                        cellsContent['5537'] = ['오부장', '정형택'];
-                    } else {
-                        cellsContent['5537'] = initialNames5537;
-                    }
-                    
-                    cellsContent['5518'] = (dayOfWeek === 6) ? ['김영환', ''] : ['', '권과장'];
+                let cellsContent = {'3613':['',''],'5536호':['',''],'5537':['',''],'3612':['',''],'5518':['',''],'기 타':['','']};
+                if (!(dayOfWeek===0 || isHoliday)) {
+                    let firstMonday = new Date(currentDate), daysToSubtract = (firstMonday.getDay()===0)?6:firstMonday.getDay()-1;
+                    firstMonday.setDate(firstMonday.getDate()-daysToSubtract); firstMonday.setHours(0,0,0,0);
+                    const diffTime = firstMonday.getTime()-baseDate.getTime();
+                    let weeksPassed = Math.floor(diffTime/(1000*60*60*24*7));
+                    let initial3613=['이미휴','강명희'], initial5537=['이기용','정형택'], initial5536=['최창희','송명석'];
+                    if (weeksPassed%2!==0){initial3613.reverse();initial5537.reverse();initial5536.reverse();}
+                    cellsContent['3613']=initial3613; cellsContent['5536호']=initial5536;
+                    if (dayOfWeek===6){cellsContent['5537']=['오부장','정형택'];} else {cellsContent['5537']=initial5537;}
+                    cellsContent['5518']=(dayOfWeek===6)?['김영환','']:['','권과장'];
                 }
-
-                if (fixedScheduleData[dateString]) {
-                    Object.assign(cellsContent, fixedScheduleData[dateString]);
-                }
-                
-                scheduleData[dateString] = cellsContent;
-
-                let rowClass = '';
-                if (dayOfWeek === 0) rowClass = 'sunday';
-                else if (dayOfWeek === 6) rowClass = 'saturday';
-                else if (isHoliday) rowClass = 'holiday';
-
+                if (fixedScheduleData[dateString]) Object.assign(cellsContent,fixedScheduleData[dateString]);
+                scheduleData[dateString]=cellsContent;
+                let rowClass=''; if(dayOfWeek===0)rowClass='sunday'; else if(dayOfWeek===6)rowClass='saturday'; else if(isHoliday)rowClass='holiday';
                 const row = `
                     <tr class="${rowClass}">
                         <td>${day}</td>
@@ -403,23 +331,19 @@
                         <td onclick="editCell(this, '3612', '${dateString}')">${renderCellContent(cellsContent['3612'])}</td>
                         <td onclick="editCell(this, '5518', '${dateString}')">${renderCellContent(cellsContent['5518'])}</td>
                         <td onclick="editCell(this, '기 타', '${dateString}')">${renderCellContent(cellsContent['기 타'])}</td>
-                    </tr>
-                `;
+                    </tr>`;
                 scheduleBody.insertAdjacentHTML('beforeend', row);
-                currentDate.setDate(currentDate.getDate() + 1);
+                currentDate.setDate(currentDate.getDate()+1);
             }
         }
 
         function printPage() {
             document.querySelectorAll('.edit-mode').forEach(cell => {
-                const colId = cell.dataset.colId;
-                const dateString = cell.dataset.dateString;
+                const colId = cell.dataset.colId, dateString = cell.dataset.dateString;
                 cell.classList.remove('edit-mode');
                 if (scheduleData[dateString] && scheduleData[dateString][colId]) {
                     cell.innerHTML = renderCellContent(scheduleData[dateString][colId]);
-                } else {
-                    cell.innerHTML = '';
-                }
+                } else { cell.innerHTML = ''; }
             });
             window.print();
         }
