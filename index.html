@@ -10,7 +10,6 @@
             font-family: Arial, sans-serif;
             margin: 10px;
             background-color: #f4f4f4;
-            color: #333;
         }
         .controls {
             background-color: #fff;
@@ -22,7 +21,6 @@
             flex-wrap: wrap;
             gap: 10px;
             align-items: center;
-            justify-content: center; /* Center controls on smaller screens */
         }
         .controls label {
             font-weight: bold;
@@ -46,6 +44,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 15px;
+            margin-right: 8px;
             text-decoration: none;
             display: inline-block;
             text-align: center;
@@ -59,17 +58,15 @@
             padding: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin: 20px auto;
-            width: 95%; /* Adjust for better responsiveness */
-            max-width: 27.7cm; /* Max width for desktop */
-            overflow-x: auto; /* Enable horizontal scrolling on small screens */
+            width: 27.7cm;
         }
         table {
-            width: 100%;
+            width: 27.7cm;
             border-collapse: collapse;
+            margin: 0 auto;
             font-size: 0.75em;
             background-color: #fff;
             table-layout: fixed;
-            min-width: 700px; /* Minimum width to prevent column squishing */
         }
         th, td {
             border: 1px solid #ddd;
@@ -85,14 +82,14 @@
             background-color: #f2f2f2;
             font-weight: bold;
         }
-        th:nth-child(1), td:nth-child(1) { width: 6%; }
-        th:nth-child(2), td:nth-child(2) { width: 6%; }
-        th:nth-child(3), td:nth-child(3) { width: 15.5%; }
-        th:nth-child(4), td:nth-child(4) { width: 15.5%; }
-        th:nth-child(5), td:nth-child(5) { width: 15.5%; }
-        th:nth-child(6), td:nth-child(6) { width: 15.5%; }
-        th:nth-child(7), td:nth-child(7) { width: 15.5%; }
-        th:nth-child(8), td:nth-child(8) { width: 15.5%; }
+        th:nth-child(1), td:nth-child(1) { width: 2.5cm; }
+        th:nth-child(2), td:nth-child(2) { width: 2.5cm; }
+        th:nth-child(3), td:nth-child(3) { width: 3.8cm; }
+        th:nth-child(4), td:nth-child(4) { width: 3.8cm; }
+        th:nth-child(5), td:nth-child(5) { width: 3.8cm; }
+        th:nth-child(6), td:nth-child(6) { width: 3.8cm; }
+        th:nth-child(7), td:nth-child(7) { width: 3.8cm; }
+        th:nth-child(8), td:nth-child(8) { width: 3.8cm; }
         caption {
             font-size: 1.2em;
             margin-bottom: 10px;
@@ -120,100 +117,58 @@
             height: 100%;
         }
         .edit-mode input {
-            width: calc(100% - 2px);
-            margin: 0;
-            padding: 1px;
-            border: 1px solid #007bff;
+            width: calc(100% - 8px); /* 패딩 및 보더 고려 */
+            margin-bottom: 2px;
+            padding: 2px;
             box-sizing: border-box;
-            text-align: center;
-            font-size: 0.8em;
-            line-height: 1.1;
-            flex-shrink: 0;
-        }
-        .edit-mode input:first-of-type {
-            margin-bottom: 1px;
         }
         .edit-mode .cell-buttons {
             display: flex;
             justify-content: space-around;
-            margin-top: 1px;
-            flex-shrink: 0;
+            margin-top: 2px;
         }
         .edit-mode .cell-buttons button {
-            padding: 1px 3px;
-            font-size: 0.6em;
-            margin: 0 1px;
-            background-color: #6c757d;
+            padding: 3px 5px;
+            font-size: 0.7em;
+            background-color: #28a745;
             color: white;
             border: none;
             border-radius: 3px;
             cursor: pointer;
+            white-space: nowrap;
         }
-        .edit-mode .cell-buttons button:hover {
-            background-color: #5a6268;
+        .edit-mode .cell-buttons button.btn-temp {
+            background-color: #ffc107;
         }
-        .edit-mode .cell-buttons .btn-fixed { background-color: #28a745; }
-        .edit-mode .cell-buttons .btn-fixed:hover { background-color: #218838; }
-        .edit-mode .cell-buttons .btn-temp { background-color: #ffc107; }
-        .edit-mode .cell-buttons .btn-temp:hover { background-color: #e0a800; }
-        .edit-mode .cell-buttons .btn-cancel { background-color: #dc3545; }
-        .edit-mode .cell-buttons .btn-cancel:hover { background-color: #c82333; }
+        .edit-mode .cell-buttons button.btn-cancel {
+            background-color: #dc3545;
+        }
         .name-entry {
             display: block;
-            text-align: center;
-        }
-        
-        /* Media Queries for Mobile */
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .controls input[type="number"],
-            .controls select {
-                width: 100%;
-                box-sizing: border-box;
-            }
-            .controls label {
-                margin-right: 0;
-            }
-            .controls div {
-                display: flex;
-                flex-direction: row;
-                justify-content: center;
-                gap: 10px;
-                flex-wrap: wrap;
-            }
-            .controls div label {
-                white-space: nowrap;
-            }
-            .controls button, .controls a.button-link {
-                width: 100%;
-                margin-top: 5px;
-                box-sizing: border-box;
-            }
+            margin-top: 2px;
+            margin-bottom: 2px;
         }
     </style>
 </head>
 <body>
     <div class="controls">
-        <label for="yearInput">년:</label>
-        <input type="number" id="yearInput" value="2025" min="2000" max="2100">
+        <label for="yearInput">년도:</label>
+        <input type="number" id="yearInput" value="2025">
         <label for="monthInput">월:</label>
-        <input type="number" id="monthInput" value="9" min="1" max="12">
-        <div>
-            <input type="radio" id="option1" name="displayOption" value="1" checked>
-            <label for="option1">1일 ~ 15일</label>
-            <input type="radio" id="option2" name="displayOption" value="2">
-            <label for="option2">16일 ~ 말일</label>
-        </div>
-        <button onclick="generateSchedule()">근무현황표 생성</button>
-        <button onclick="saveAsPdf()">PDF로 저장</button>
-        <button onclick="printAsPdf()">A4로 인쇄</button>
+        <input type="number" id="monthInput" value="9">
+        
+        <input type="radio" id="option1" name="displayOption" value="1" checked>
+        <label for="option1">1일 ~ 15일</label>
+        <input type="radio" id="option2" name="displayOption" value="2">
+        <label for="option2">16일 ~ 말일</label>
+        
+        <button onclick="generateSchedule()">생성</button>
+        <button onclick="saveAsPdf()">PDF 저장</button>
+        <button onclick="printAsPdf()">PDF 인쇄</button>
         <a href="https://waryong2025.github.io/timeman/" class="button-link" target="_blank">07번 배차표</a>
         <a href="https://waryong2025.github.io/townbus/" class="button-link" target="_blank">08번배차표</a>
     </div>
-    <div id="scheduleContainer">
+    <div id="scheduleContainer" style="background-color: white; padding: 10px;">
         <table>
             <caption id="tableCaption">종로 07번 2025년 9월 1일 ~ 15일까지 근무현황표</caption>
             <thead>
@@ -221,10 +176,10 @@
                     <th>월일</th>
                     <th>요일</th>
                     <th>3613</th>
+                    <th>3612</th>
                     <th>5536호</th>
                     <th>5537</th>
                     <th>5518</th>
-                    <th>3612</th>
                     <th>기 타</th>
                 </tr>
             </thead>
@@ -238,7 +193,7 @@
         
         // 임시 스케줄 데이터 (페이지 로딩 시점에만 유효)
         let scheduleData = {};
-
+        
         const getDayName = (dayIndex) => {
             const days = ['일', '월', '화', '수', '목', '금', '토'];
             return days[dayIndex];
@@ -406,8 +361,8 @@
                 const dateString = currentDate.toISOString().slice(0, 10);
 
                 let cellsContent = {
-                    '3613': ['', ''], '5536호': ['', ''], '5537': ['', ''],
-                    '5518': ['', ''], '3612': ['', ''], '기 타': ['', '']
+                    '3613': ['', ''], '3612': ['', ''], '5536호': ['', ''],
+                    '5537': ['', ''], '5518': ['', ''], '기 타': ['', '']
                 };
 
                 // 1. 기본 로테이션 및 규칙 적용
@@ -421,8 +376,8 @@
                     const diffTime = firstMondayOfCurrentWeek.getTime() - baseDate.getTime();
                     let weeksPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
                     
-                    let initialNames3613 = ['이미휴', '강명희']; // 오전/오후 변경
-                    let initialNames5537 = ['이기용', '정형택']; // 오전/오후 변경
+                    let initialNames3613 = ['이미휴', '강명희']; 
+                    let initialNames5537 = ['이기용', '정형택']; // 요청에 따라 '이기용'님과 '정형택'님의 순서를 변경했습니다.
                     let initialNames5536 = ['최창희', '송명석'];
 
                     if (weeksPassed % 2 !== 0) {
@@ -434,13 +389,16 @@
                     cellsContent['3613'] = initialNames3613;
                     cellsContent['5536호'] = initialNames5536;
 
-                    if (dayOfWeek === 6) { // 매주 토요일
-                        cellsContent['5537'] = ['오부장', '정형택']; // 오부장/정형택 고정
-                        cellsContent['5518'] = ['김영환', ''];
-                    } else {
+                    // ==================== ✨ 수정된 부분 ✨ ====================
+                    // 5537번의 토요일 근무자를 고정하고, 5518번의 토요일 근무를 원래대로 되돌렸습니다.
+                    if (dayOfWeek === 6) { // 토요일인 경우
+                        cellsContent['5537'] = ['오부장', '정형택'];
+                    } else { // 평일인 경우
                         cellsContent['5537'] = initialNames5537;
-                        cellsContent['5518'] = ['권과장', ''];
                     }
+                    
+                    cellsContent['5518'] = (dayOfWeek === 6) ? ['김영환', ''] : ['', '권과장'];
+                    // =======================================================
                 }
 
                 // 2. 고정 데이터가 있다면 기본값을 덮어쓰기
@@ -460,10 +418,10 @@
                         <td>${day}</td>
                         <td>${dayName}</td>
                         <td onclick="editCell(this, '3613', '${dateString}')">${renderCellContent(cellsContent['3613'])}</td>
+                        <td onclick="editCell(this, '3612', '${dateString}')">${renderCellContent(cellsContent['3612'])}</td>
                         <td onclick="editCell(this, '5536호', '${dateString}')">${renderCellContent(cellsContent['5536호'])}</td>
                         <td onclick="editCell(this, '5537', '${dateString}')">${renderCellContent(cellsContent['5537'])}</td>
                         <td onclick="editCell(this, '5518', '${dateString}')">${renderCellContent(cellsContent['5518'])}</td>
-                        <td onclick="editCell(this, '3612', '${dateString}')">${renderCellContent(cellsContent['3612'])}</td>
                         <td onclick="editCell(this, '기 타', '${dateString}')">${renderCellContent(cellsContent['기 타'])}</td>
                     </tr>
                 `;
