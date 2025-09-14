@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>근무현황표 생성기</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -131,7 +130,6 @@
         .edit-mode .cell-buttons button.btn-cancel { background-color: #dc3545; }
         .name-entry { display: block; margin-top: 2px; margin-bottom: 2px; }
 
-        /* 인쇄 및 PDF 저장 시 스타일 */
         @media print {
             body { background-color: white; margin: 0; padding: 0; }
             .controls { display: none; }
@@ -151,7 +149,6 @@
             }
         }
 
-        /* 모바일 최적화 */
         @media screen and (max-width: 768px) {
             .controls { flex-direction: column; align-items: stretch; }
             .controls input[type="number"],
@@ -177,7 +174,6 @@
         <label for="option2">16일 ~ 말일</label>
         
         <button onclick="generateSchedule()">생성</button>
-        <button onclick="saveAsPdf()">PDF 저장</button>
         <button onclick="printPage()">인쇄</button>
         <a href="https://waryong2025.github.io/timeman/" class="button-link" target="_blank">07번 배차표</a>
         <a href="https://waryong2025.github.io/townbus/" class="button-link" target="_blank">08번배차표</a>
@@ -190,9 +186,9 @@
                     <th>월일</th>
                     <th>요일</th>
                     <th>3613</th>
-                    <th>3612</th>
                     <th>5536호</th>
                     <th>5537</th>
+                    <th>3612</th>
                     <th>5518</th>
                     <th>기 타</th>
                 </tr>
@@ -247,7 +243,7 @@
             
             cellElement.dataset.colId = colId;
             cellElement.dataset.dateString = dateString;
-            cell.classList.add('edit-mode');
+            cellElement.classList.add('edit-mode');
             
             cellElement.innerHTML = `
                 <input type="text" class="morning-input" value="${currentNames[0] || ''}" placeholder="오전 명단">
@@ -350,8 +346,8 @@
                 const dateString = currentDate.toISOString().slice(0, 10);
 
                 let cellsContent = {
-                    '3613': ['', ''], '3612': ['', ''], '5536호': ['', ''],
-                    '5537': ['', ''], '5518': ['', ''], '기 타': ['', '']
+                    '3613': ['', ''], '5536호': ['', ''], '5537': ['', ''],
+                    '3612': ['', ''], '5518': ['', ''], '기 타': ['', '']
                 };
 
                 if (!(dayOfWeek === 0 || isHoliday)) {
@@ -402,9 +398,9 @@
                         <td>${day}</td>
                         <td>${dayName}</td>
                         <td onclick="editCell(this, '3613', '${dateString}')">${renderCellContent(cellsContent['3613'])}</td>
-                        <td onclick="editCell(this, '3612', '${dateString}')">${renderCellContent(cellsContent['3612'])}</td>
                         <td onclick="editCell(this, '5536호', '${dateString}')">${renderCellContent(cellsContent['5536호'])}</td>
                         <td onclick="editCell(this, '5537', '${dateString}')">${renderCellContent(cellsContent['5537'])}</td>
+                        <td onclick="editCell(this, '3612', '${dateString}')">${renderCellContent(cellsContent['3612'])}</td>
                         <td onclick="editCell(this, '5518', '${dateString}')">${renderCellContent(cellsContent['5518'])}</td>
                         <td onclick="editCell(this, '기 타', '${dateString}')">${renderCellContent(cellsContent['기 타'])}</td>
                     </tr>
@@ -414,41 +410,7 @@
             }
         }
 
-        const pdfOptions = {
-            margin: [10, 10, 10, 10],
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: {
-                scale: 1.0, 
-                logging: false, 
-                dpi: 192,
-                letterRendering: true, 
-                background: '#ffffff'
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-
-        function saveAsPdf() {
-            const element = document.getElementById('scheduleContainer');
-            const captionText = document.getElementById('tableCaption').textContent;
-            const filename = captionText.replace(/[^a-zA-Z0-9가-힣\s]/g, '').replace(/ /g, '_') + '.pdf';
-
-            // PDF 변환 전 수정 모드 초기화
-            document.querySelectorAll('.edit-mode').forEach(cell => {
-                const colId = cell.dataset.colId;
-                const dateString = cell.dataset.dateString;
-                cell.classList.remove('edit-mode');
-                if (scheduleData[dateString] && scheduleData[dateString][colId]) {
-                    cell.innerHTML = renderCellContent(scheduleData[dateString][colId]);
-                } else {
-                    cell.innerHTML = '';
-                }
-            });
-
-            html2pdf().set({ ...pdfOptions, filename: filename }).from(element).save();
-        }
-
         function printPage() {
-            // 인쇄 전 편집 모드 해제
             document.querySelectorAll('.edit-mode').forEach(cell => {
                 const colId = cell.dataset.colId;
                 const dateString = cell.dataset.dateString;
@@ -464,7 +426,6 @@
         
         document.addEventListener('DOMContentLoaded', generateSchedule);
         window.onload = generateSchedule;
-
     </script>
 </body>
 </html>
