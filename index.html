@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>와룡운수 근무현황 일정표</title>
+    <title>근무현황표 생성기</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,7 +40,6 @@
         }
         .controls button, .controls a.button-link {
             padding: 8px 15px;
-            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 4px;
@@ -52,9 +51,13 @@
             text-align: center;
             white-space: nowrap;
         }
-        .controls button:hover, .controls a.button-link:hover {
-            background-color: #0056b3;
-        }
+        .controls button { background-color: #007bff; }
+        .controls button:hover { background-color: #0056b3; }
+        .controls a.button-link { background-color: #17a2b8; }
+        .controls a.button-link:hover { background-color: #138496; }
+        .controls button.btn-danger { background-color: #dc3545; }
+        .controls button.btn-danger:hover { background-color: #c82333; }
+
 
         #scheduleContainer {
             background-color: white;
@@ -119,15 +122,16 @@
         .edit-mode .cell-buttons button {
             padding: 3px 5px;
             font-size: 0.7em;
-            background-color: #28a745;
             color: white;
             border: none;
             border-radius: 3px;
             cursor: pointer;
             white-space: nowrap;
         }
+        .edit-mode .cell-buttons button.btn-fixed { background-color: #28a745; }
         .edit-mode .cell-buttons button.btn-temp { background-color: #ffc107; }
-        .edit-mode .cell-buttons button.btn-cancel { background-color: #dc3545; }
+        .edit-mode .cell-buttons button.btn-delete { background-color: #dc3545; }
+        .edit-mode .cell-buttons button.btn-cancel { background-color: #6c757d; }
         .name-entry { display: block; margin-top: 2px; margin-bottom: 2px; }
 
         /* 인쇄 모드 */
@@ -184,6 +188,7 @@
         
         <button onclick="generateSchedule()">생성</button>
         <button onclick="printPage()">인쇄</button>
+        <button class="btn-danger" onclick="resetAllFixedSchedules()">전체 고정 초기화</button>
         <a href="https://waryong2025.github.io/timeman/" class="button-link" target="_blank">07번 배차표</a>
         <a href="https://waryong2025.github.io/townbus/" class="button-link" target="_blank">08번배차표</a>
     </div>
@@ -206,7 +211,9 @@
         </table>
     </div>
     <script>
-        let fixedScheduleData = JSON.parse(localStorage.getItem('jongro07FixedSchedule')) || {};
+        // '고정' 데이터는 요일-차량번호를 키로 하여 영구 저장합니다.
+        let recurringScheduleData = JSON.parse(localStorage.getItem('jongro07RecurringSchedule')) || {};
+        // '임시' 및 현재 화면에 표시될 데이터를 저장합니다.
         let scheduleData = {};
         
         const getDayName = (dayIndex) => ['일','월','화','수','목','금','토'][dayIndex];
@@ -231,20 +238,24 @@
             return namesArray.filter(name => name).map(name => `<span class="name-entry">${name}</span>`).join('<br>');
         };
 
-        function editCell(cellElement, colId, dateString) {
+        function editCell(cellElement, colId, dateString, dayOfWeek) {
             if (cellElement.classList.contains('edit-mode')) return;
-            const currentNames = (scheduleData[dateString] && scheduleData[dateString][colId]) || 
-                                 (fixedScheduleData[dateString] && fixedScheduleData[dateString][colId]) || ['', ''];
+
+            const currentNames = (scheduleData[dateString] && scheduleData[dateString][colId]) || ['', ''];
+            
             cellElement.dataset.colId = colId;
             cellElement.dataset.dateString = dateString;
+            cellElement.dataset.dayOfWeek = dayOfWeek; // 요일 정보 저장
             cellElement.classList.add('edit-mode');
+
             cellElement.innerHTML = `
                 <input type="text" class="morning-input" value="${currentNames[0] || ''}" placeholder="오전 명단">
                 <input type="text" class="afternoon-input" value="${currentNames[1] || ''}" placeholder="오후 명단">
                 <div class="cell-buttons">
                     <button class="btn-fixed" onclick="saveFixedCell(this.parentNode.parentNode)">고정</button>
                     <button class="btn-temp" onclick="saveTempCell(this.parentNode.parentNode)">임시</button>
-                    <button class="btn-cancel" onclick="resetCell(this.parentNode.parentNode)">초기화</button>
+                    <button class="btn-delete" onclick="deleteFixedCell(this.parentNode.parentNode)">고정 삭제</button>
+                    <button class="btn-cancel" onclick="cancelEdit(this.parentNode.parentNode)">취소</button>
                 </div>`;
         }
 
@@ -255,31 +266,58 @@
         }
 
         function saveFixedCell(cellElement) {
-            const colId = cellElement.dataset.colId, dateString = cellElement.dataset.dateString;
+            const colId = cellElement.dataset.colId;
+            const dayOfWeek = cellElement.dataset.dayOfWeek;
             const newNames = getNamesFromInput(cellElement);
-            if (!fixedScheduleData[dateString]) fixedScheduleData[dateString] = {};
-            fixedScheduleData[dateString][colId] = newNames;
-            localStorage.setItem('jongro07FixedSchedule', JSON.stringify(fixedScheduleData));
-            if (!scheduleData[dateString]) scheduleData[dateString] = {};
-            scheduleData[dateString][colId] = newNames;
-            cellElement.classList.remove('edit-mode');
-            cellElement.innerHTML = renderCellContent(newNames);
+            
+            const key = `${dayOfWeek}-${colId}`; // '요일-차량번호' 형식의 키 생성
+            recurringScheduleData[key] = newNames;
+            localStorage.setItem('jongro07RecurringSchedule', JSON.stringify(recurringScheduleData));
+            
+            generateSchedule(); // 변경된 고정값을 전체 표에 반영하기 위해 새로고침
         }
 
         function saveTempCell(cellElement) {
-            const colId = cellElement.dataset.colId, dateString = cellElement.dataset.dateString;
+            const colId = cellElement.dataset.colId;
+            const dateString = cellElement.dataset.dateString;
             const newNames = getNamesFromInput(cellElement);
+
             if (!scheduleData[dateString]) scheduleData[dateString] = {};
             scheduleData[dateString][colId] = newNames;
+            
             cellElement.classList.remove('edit-mode');
             cellElement.innerHTML = renderCellContent(newNames);
         }
+        
+        function deleteFixedCell(cellElement) {
+            const colId = cellElement.dataset.colId;
+            const dayOfWeek = cellElement.dataset.dayOfWeek;
+            const key = `${dayOfWeek}-${colId}`;
 
-        function resetCell(cellElement) {
-            const colId = cellElement.dataset.colId, dateString = cellElement.dataset.dateString;
-            if (fixedScheduleData[dateString] && fixedScheduleData[dateString][colId]) delete fixedScheduleData[dateString][colId];
-            localStorage.setItem('jongro07FixedSchedule', JSON.stringify(fixedScheduleData));
-            generateSchedule();
+            if (recurringScheduleData[key]) {
+                delete recurringScheduleData[key];
+                localStorage.setItem('jongro07RecurringSchedule', JSON.stringify(recurringScheduleData));
+            }
+            generateSchedule(); // 고정값 삭제 후 표를 새로고침
+        }
+
+        function cancelEdit(cellElement) {
+            const colId = cellElement.dataset.colId;
+            const dateString = cellElement.dataset.dateString;
+            
+            cellElement.classList.remove('edit-mode');
+            // 이전 값으로 되돌림
+            const originalNames = scheduleData[dateString][colId] || ['', ''];
+            cellElement.innerHTML = renderCellContent(originalNames);
+        }
+
+        function resetAllFixedSchedules() {
+            if (confirm("저장된 모든 고정 근무표를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+                recurringScheduleData = {};
+                localStorage.removeItem('jongro07RecurringSchedule');
+                generateSchedule();
+                alert("모든 고정 근무표가 초기화되었습니다.");
+            }
         }
 
         function generateSchedule() {
@@ -288,8 +326,9 @@
             const selectedOption = document.querySelector('input[name="displayOption"]:checked').value;
             const scheduleBody = document.getElementById('scheduleBody');
             const tableCaption = document.getElementById('tableCaption');
-            scheduleData = {};
+            scheduleData = {}; // 스케줄 데이터 초기화
             let startDate, endDate;
+
             if (selectedOption === '1') {
                 startDate = new Date(year, month - 1, 1);
                 endDate = new Date(year, month - 1, 15);
@@ -300,37 +339,66 @@
             startDate.setHours(0,0,0,0); endDate.setHours(0,0,0,0);
             tableCaption.textContent = `종로 07번 ${year}년 ${month}월 ${startDate.getDate()}일 ~ ${endDate.getDate()}일까지 근무현황표`;
             scheduleBody.innerHTML = '';
+            
             const baseDate = new Date(2025, 8, 1); baseDate.setHours(0,0,0,0);
             let currentDate = new Date(startDate);
+
             while (currentDate.getTime() <= endDate.getTime()) {
-                const day = currentDate.getDate(), dayOfWeek = currentDate.getDay(), dayName = getDayName(dayOfWeek);
+                const day = currentDate.getDate();
+                const dayOfWeek = currentDate.getDay();
+                const dayName = getDayName(dayOfWeek);
                 const isHoliday = isPublicHoliday(currentDate);
                 const dateString = currentDate.toISOString().slice(0, 10);
+                
+                // 1. 기본 근무표 자동 생성
                 let cellsContent = {'3613':['',''],'5536호':['',''],'5537':['',''],'3612':['',''],'5518':['',''],'기 타':['','']};
                 if (!(dayOfWeek===0 || isHoliday)) {
-                    let firstMonday = new Date(currentDate), daysToSubtract = (firstMonday.getDay()===0)?6:firstMonday.getDay()-1;
-                    firstMonday.setDate(firstMonday.getDate()-daysToSubtract); firstMonday.setHours(0,0,0,0);
+                    let firstMonday = new Date(currentDate);
+                    let daysToSubtract = (firstMonday.getDay()===0)?6:firstMonday.getDay()-1;
+                    firstMonday.setDate(firstMonday.getDate()-daysToSubtract);
+                    firstMonday.setHours(0,0,0,0);
                     const diffTime = firstMonday.getTime()-baseDate.getTime();
                     let weeksPassed = Math.floor(diffTime/(1000*60*60*24*7));
+                    
                     let initial3613=['이미휴','강명희'], initial5537=['이기용','정형택'], initial5536=['최창희','송명석'];
-                    if (weeksPassed%2!==0){initial3613.reverse();initial5537.reverse();initial5536.reverse();}
-                    cellsContent['3613']=initial3613; cellsContent['5536호']=initial5536;
-                    if (dayOfWeek===6){cellsContent['5537']=['오부장','정형택'];} else {cellsContent['5537']=initial5537;}
-                    cellsContent['5518']=(dayOfWeek===6)?['김영환','']:['','권과장'];
+                    if (weeksPassed % 2 !== 0){ initial3613.reverse(); initial5537.reverse(); initial5536.reverse(); }
+                    
+                    cellsContent['3613'] = initial3613;
+                    cellsContent['5536호'] = initial5536;
+                    if (dayOfWeek === 6) {
+                        cellsContent['5537']=['오부장','정형택'];
+                    } else {
+                        cellsContent['5537'] = initial5537;
+                    }
+                    cellsContent['5518']=(dayOfWeek === 6) ? ['김영환',''] : ['','권과장'];
                 }
-                if (fixedScheduleData[dateString]) Object.assign(cellsContent,fixedScheduleData[dateString]);
-                scheduleData[dateString]=cellsContent;
-                let rowClass=''; if(dayOfWeek===0)rowClass='sunday'; else if(dayOfWeek===6)rowClass='saturday'; else if(isHoliday)rowClass='holiday';
+
+                // 2. '고정'된 근무표가 있으면 덮어쓰기
+                for (const colId in cellsContent) {
+                    const key = `${dayOfWeek}-${colId}`;
+                    if (recurringScheduleData[key]) {
+                        cellsContent[colId] = recurringScheduleData[key];
+                    }
+                }
+
+                // 최종 데이터를 scheduleData에 저장
+                scheduleData[dateString] = cellsContent;
+
+                let rowClass='';
+                if(dayOfWeek===0) rowClass='sunday';
+                else if(dayOfWeek===6) rowClass='saturday';
+                else if(isHoliday) rowClass='holiday';
+
                 const row = `
                     <tr class="${rowClass}">
                         <td>${day}</td>
                         <td>${dayName}</td>
-                        <td onclick="editCell(this, '3613', '${dateString}')">${renderCellContent(cellsContent['3613'])}</td>
-                        <td onclick="editCell(this, '5536호', '${dateString}')">${renderCellContent(cellsContent['5536호'])}</td>
-                        <td onclick="editCell(this, '5537', '${dateString}')">${renderCellContent(cellsContent['5537'])}</td>
-                        <td onclick="editCell(this, '3612', '${dateString}')">${renderCellContent(cellsContent['3612'])}</td>
-                        <td onclick="editCell(this, '5518', '${dateString}')">${renderCellContent(cellsContent['5518'])}</td>
-                        <td onclick="editCell(this, '기 타', '${dateString}')">${renderCellContent(cellsContent['기 타'])}</td>
+                        <td onclick="editCell(this, '3613', '${dateString}', ${dayOfWeek})">${renderCellContent(cellsContent['3613'])}</td>
+                        <td onclick="editCell(this, '5536호', '${dateString}', ${dayOfWeek})">${renderCellContent(cellsContent['5536호'])}</td>
+                        <td onclick="editCell(this, '5537', '${dateString}', ${dayOfWeek})">${renderCellContent(cellsContent['5537'])}</td>
+                        <td onclick="editCell(this, '3612', '${dateString}', ${dayOfWeek})">${renderCellContent(cellsContent['3612'])}</td>
+                        <td onclick="editCell(this, '5518', '${dateString}', ${dayOfWeek})">${renderCellContent(cellsContent['5518'])}</td>
+                        <td onclick="editCell(this, '기 타', '${dateString}', ${dayOfWeek})">${renderCellContent(cellsContent['기 타'])}</td>
                     </tr>`;
                 scheduleBody.insertAdjacentHTML('beforeend', row);
                 currentDate.setDate(currentDate.getDate()+1);
@@ -338,19 +406,14 @@
         }
 
         function printPage() {
+            // 수정 중인 셀이 있다면 원래대로 되돌림
             document.querySelectorAll('.edit-mode').forEach(cell => {
-                const colId = cell.dataset.colId, dateString = cell.dataset.dateString;
-                cell.classList.remove('edit-mode');
-                if (scheduleData[dateString] && scheduleData[dateString][colId]) {
-                    cell.innerHTML = renderCellContent(scheduleData[dateString][colId]);
-                } else { cell.innerHTML = ''; }
+                cancelEdit(cell);
             });
             window.print();
         }
         
         document.addEventListener('DOMContentLoaded', generateSchedule);
-        window.onload = generateSchedule;
     </script>
 </body>
 </html>
-
