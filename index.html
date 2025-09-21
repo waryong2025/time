@@ -10,6 +10,7 @@
             margin: 10px;
             background-color: #f4f4f4;
             color: #333;
+            font-size: 12pt; /* 전체 기본 글자 크기 설정 */
         }
 
         .controls {
@@ -69,10 +70,10 @@
         }
         table {
             width: 100%;
-            min-width: 700px;
+            min-width: 700px; /* PC화면에서 최소 너비 설정 */
             border-collapse: collapse;
             margin: 0 auto;
-            font-size: 0.9em;
+            font-size: 12pt; /* 표 내부 글자 크기 통일 */
             background-color: #fff;
             table-layout: fixed;
         }
@@ -90,8 +91,14 @@
             background-color: #f2f2f2;
             font-weight: bold;
         }
+        /* 월일, 요일 칸 크기 수정 */
+        th:nth-child(1), td:nth-child(1),
+        th:nth-child(2), td:nth-child(2) {
+            width: 75px;
+            min-width: 75px;
+        }
         caption {
-            font-size: 1.2em;
+            font-size: 1.2em; /* 제목 글자 크기 통일 */
             margin-bottom: 10px;
             font-weight: bold;
             color: #333;
@@ -136,6 +143,10 @@
 
         /* 인쇄 모드 */
         @media print {
+            @page {
+                size: A4; /* A4 용지에 맞춤 */
+                margin: 10mm; /* 여백 설정 */
+            }
             body {
                 background-color: white;
                 margin: 0;
@@ -151,26 +162,48 @@
             }
             table {
                 width: 100%;
-                font-size: 0.6em;
+                min-width: unset; /* 인쇄 시 최소 너비 제한 해제 */
+                font-size: 0.7em; /* 인쇄 글자 크기 조절 */
                 border: 1px solid #000;
-                transform: scale(0.9);  /* 표 크기 축소 */
-                transform-origin: top left;
+                table-layout: fixed; /* 용지 가로폭에 맞춰 표 조절 */
             }
             th, td {
                 padding: 2px;
                 height: auto;
+                word-break: break-all;
+            }
+            /* 월일, 요일 칸 크기 조절 */
+            table th:nth-child(1),
+            table td:nth-child(1),
+            table th:nth-child(2),
+            table td:nth-child(2) {
+                width: 4%;
             }
         }
 
+        /* 모바일 화면 대응 */
         @media screen and (max-width: 768px) {
-            .controls { flex-direction: column; align-items: stretch; }
+            .controls { 
+                flex-direction: column; 
+                align-items: stretch; 
+            }
             .controls input[type="number"],
-            .controls select { width: 100%; }
-            .controls label { text-align: left; margin-bottom: 0; }
-            .controls button, .controls a.button-link { width: 100%; box-sizing: border-box; margin: 5px 0; }
-            #scheduleContainer { padding: 5px; }
-            table { font-size: 0.7em; }
-            th, td { padding: 4px; }
+            .controls select,
+            .controls button,
+            .controls a.button-link { 
+                width: 100%; 
+                box-sizing: border-box; 
+                margin: 5px 0; 
+            }
+            #scheduleContainer { 
+                padding: 5px; 
+            }
+            table { 
+                font-size: 0.8em; 
+            }
+            th, td { 
+                padding: 4px; 
+            }
         }
     </style>
 </head>
@@ -237,15 +270,28 @@
             if (!namesArray || (namesArray[0] === '' && namesArray[1] === '')) return '';
             return namesArray.filter(name => name).map(name => `<span class="name-entry">${name}</span>`).join('<br>');
         };
+        
+        function cancelEdit(cellElement) {
+            const colId = cellElement.dataset.colId;
+            const dateString = cellElement.dataset.dateString;
+            const originalNames = (scheduleData[dateString] && scheduleData[dateString][colId]) || ['', ''];
+
+            cellElement.classList.remove('edit-mode');
+            cellElement.innerHTML = renderCellContent(originalNames);
+        }
 
         function editCell(cellElement, colId, dateString, dayOfWeek) {
             if (cellElement.classList.contains('edit-mode')) return;
+            
+            document.querySelectorAll('.edit-mode').forEach(cell => {
+                cancelEdit(cell);
+            });
 
             const currentNames = (scheduleData[dateString] && scheduleData[dateString][colId]) || ['', ''];
             
             cellElement.dataset.colId = colId;
             cellElement.dataset.dateString = dateString;
-            cellElement.dataset.dayOfWeek = dayOfWeek; // 요일 정보 저장
+            cellElement.dataset.dayOfWeek = dayOfWeek;
             cellElement.classList.add('edit-mode');
 
             cellElement.innerHTML = `
@@ -301,22 +347,17 @@
             generateSchedule(); // 고정값 삭제 후 표를 새로고침
         }
 
-        function cancelEdit(cellElement) {
-            const colId = cellElement.dataset.colId;
-            const dateString = cellElement.dataset.dateString;
-            
-            cellElement.classList.remove('edit-mode');
-            // 이전 값으로 되돌림
-            const originalNames = scheduleData[dateString][colId] || ['', ''];
-            cellElement.innerHTML = renderCellContent(originalNames);
-        }
-
         function resetAllFixedSchedules() {
-            if (confirm("저장된 모든 고정 근무표를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
-                recurringScheduleData = {};
-                localStorage.removeItem('jongro07RecurringSchedule');
-                generateSchedule();
-                alert("모든 고정 근무표가 초기화되었습니다.");
+            const password = prompt("저장된 모든 고정 근무표를 삭제하려면 비밀번호를 입력하세요.");
+            if (password === "201023") {
+                if (confirm("정말로 모든 고정 근무표를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+                    recurringScheduleData = {};
+                    localStorage.removeItem('jongro07RecurringSchedule');
+                    generateSchedule();
+                    alert("모든 고정 근무표가 초기화되었습니다.");
+                }
+            } else if (password !== null) {
+                alert("비밀번호를 확인 후 신청하세요.");
             }
         }
 
