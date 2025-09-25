@@ -21,78 +21,117 @@
             margin-bottom: 15px;
             display:flex; flex-wrap:wrap; gap:10px; align-items:center;
         }
-        .controls label { font-weight:bold; margin-right:5px; }
-        .controls input[type="number"], .controls select {
-            padding:6px; border:1px solid #ddd; border-radius:4px; width:70px; box-sizing:border-box;
+        .controls label { font-weight:bold; margin-right:5px;
         }
-        .controls input[type="radio"] { margin-left:10px; }
+        .controls input[type="number"], .controls select {
+            padding:6px;
+            border:1px solid #ddd; border-radius:4px; width:70px; box-sizing:border-box;
+        }
+        .controls input[type="radio"] { margin-left:10px;
+        }
         .controls button, .controls a.button-link {
-            padding:8px 15px; color:white; border:none; border-radius:4px;
+            padding:8px 15px;
+            color:white; border:none; border-radius:4px;
             cursor:pointer; font-size:15px; margin-right:8px; text-decoration:none; display:inline-block;
             text-align:center; white-space:nowrap;
         }
-        .controls button { background-color:#007bff; }
-        .controls button:hover { background-color:#0056b3; }
-        .controls a.button-link { background-color:#17a2b8; }
-        .controls a.button-link:hover { background-color:#138496; }
-        .controls button.btn-danger { background-color:#dc3545; }
-        .controls button.btn-danger:hover { background-color:#c82333; }
+        .controls button { background-color:#007bff;
+        }
+        .controls button:hover { background-color:#0056b3;
+        }
+        .controls a.button-link { background-color:#17a2b8;
+        }
+        .controls a.button-link:hover { background-color:#138496;
+        }
+        .controls button.btn-danger { background-color:#dc3545;
+        }
+        .controls button.btn-danger:hover { background-color:#c82333;
+        }
 
         #scheduleContainer {
-            background-color:white; padding:10px; box-shadow:0 2px 4px rgba(0,0,0,0.1);
+            background-color:white;
+            padding:10px; box-shadow:0 2px 4px rgba(0,0,0,0.1);
             margin:20px auto; max-width:95%; overflow-x:auto;
         }
         table {
-            width:100%; min-width:700px; border-collapse:collapse; margin:0 auto; font-size:12pt; background:#fff; table-layout:fixed;
+            width:100%;
+            min-width:700px; border-collapse:collapse; margin:0 auto; font-size:12pt; background:#fff; table-layout:fixed;
         }
         th, td {
-            border:1px solid #ddd; padding:6px; text-align:center; vertical-align:top; line-height:1.1; word-break:keep-all;
+            border:1px solid #ddd;
+            padding:6px; text-align:center; vertical-align:top; line-height:1.1; word-break:keep-all;
             height:38px; box-sizing:border-box;
         }
-        th { background-color:#f2f2f2; font-weight:bold; }
+        th { background-color:#f2f2f2; font-weight:bold;
+        }
         th:nth-child(1), td:nth-child(1),
-        th:nth-child(2), td:nth-child(2) { width:75px; min-width:75px; }
+        th:nth-child(2), td:nth-child(2) { width:75px;
+            min-width:75px; }
 
-        caption { font-size:1.2em; margin-bottom:10px; font-weight:bold; color:#333; text-decoration:underline; }
-        .sunday { background-color:#ffe0e0; }
-        .saturday { background-color:#e0e0ff; }
-        .holiday { background-color:#ffcccc; font-weight:bold; color:#cc0000; }
+        caption { font-size:1.2em; margin-bottom:10px; font-weight:bold; color:#333; text-decoration:underline;
+        }
+        .sunday { background-color:#ffe0e0;
+        }
+        .saturday { background-color:#e0e0ff;
+        }
+        .holiday { background-color:#ffcccc; font-weight:bold; color:#cc0000;
+        }
 
-        .edit-mode { position:relative; padding:2px; display:flex; flex-direction:column; justify-content:center; height:100%; }
-        .edit-mode input { width: calc(100% - 8px); margin-bottom:2px; padding:2px; box-sizing:border-box; }
-        .edit-mode .cell-buttons { display:flex; justify-content:space-around; margin-top:2px; }
-        .edit-mode .cell-buttons button { padding:3px 5px; font-size:0.7em; color:white; border:none; border-radius:3px; cursor:pointer; white-space:nowrap; }
-        .edit-mode .cell-buttons button.btn-fixed { background-color:#28a745; }
-        .edit-mode .cell-buttons button.btn-temp { background-color:#ffc107; color:#000; }
-        .edit-mode .cell-buttons button.btn-delete { background-color:#dc3545; }
-        .edit-mode .cell-buttons button.btn-cancel { background-color:#6c757d; }
-        .edit-mode .cell-buttons button.btn-bold { background-color:#007bff; color:white; }
-
-        .name-entry { display:block; margin-top:2px; margin-bottom:2px; }
-        .name-entry.bold-name { font-weight:bold; }
+        .edit-mode { position:relative; padding:2px; display:flex; flex-direction:column; justify-content:center; height:100%;
+        }
+        .edit-mode input { width: calc(100% - 8px); margin-bottom:2px; padding:2px; box-sizing:border-box;
+        }
+        .edit-mode .cell-buttons { display:flex; justify-content:space-around; margin-top:2px;
+        }
+        .edit-mode .cell-buttons button { padding:3px 5px; font-size:0.7em; color:white; border:none; border-radius:3px; cursor:pointer; white-space:nowrap;
+        }
+        .edit-mode .cell-buttons button.btn-fixed { background-color:#28a745;
+        }
+        .edit-mode .cell-buttons button.btn-temp { background-color:#ffc107; color:#000;
+        }
+        .edit-mode .cell-buttons button.btn-delete { background-color:#dc3545;
+        }
+        .edit-mode .cell-buttons button.btn-cancel { background-color:#6c757d;
+        }
+        .name-entry { display:block; margin-top:2px; margin-bottom:2px;
+        }
+        .name-entry.bold-name { font-weight:bold;
+        }
 
         .hidden-x {
             color: #fff;
         }
         
         @media print {
-            @page { size:A4; margin:10mm; }
-            body { background:white; margin:0; padding:0; -webkit-print-color-adjust: exact; }
-            .controls { display:none; }
-            #scheduleContainer { box-shadow:none; margin:0; padding:0; }
-            table { width:100%; min-width:unset; font-size:0.7em; border:1px solid #000; table-layout:fixed; }
-            th, td { padding:2px; height:auto; word-break:break-all; }
-            table th:nth-child(1), table td:nth-child(1), table th:nth-child(2), table td:nth-child(2) { width:4%; }
+            @page { size:A4;
+            margin:10mm; }
+            body { background:white; margin:0; padding:0; -webkit-print-color-adjust: exact;
+            }
+            .controls { display:none;
+            }
+            #scheduleContainer { box-shadow:none; margin:0; padding:0;
+            }
+            table { width:100%; min-width:unset; font-size:0.7em; border:1px solid #000;
+            table-layout:fixed; }
+            th, td { padding:2px; height:auto; word-break:break-all;
+            }
+            table th:nth-child(1), table td:nth-child(1), table th:nth-child(2), table td:nth-child(2) { width:4%;
+            }
             .hidden-x {
                 color: #fff;
             }
         }
         @media screen and (max-width:768px) {
-            .controls { flex-direction:column; align-items:stretch; }
-            .controls input[type="number"], .controls select, .controls button, .controls a.button-link { width:100%; box-sizing:border-box; margin:5px 0; }
-            #scheduleContainer { padding:5px; }
-            table { font-size:0.8em; }
-            th, td { padding:4px; }
+            .controls { flex-direction:column;
+            align-items:stretch; }
+            .controls input[type="number"], .controls select, .controls button, .controls a.button-link { width:100%;
+            box-sizing:border-box; margin:5px 0; }
+            #scheduleContainer { padding:5px;
+            }
+            table { font-size:0.8em;
+            }
+            th, td { padding:4px;
+            }
         }
     </style>
 </head>
@@ -106,6 +145,7 @@
         <input type="radio" id="option1" name="displayOption" value="1" checked>
         <label for="option1">1일 ~ 15일</label>
         <input type="radio" id="option2" name="displayOption" value="2">
+       
         <label for="option2">16일 ~ 말일</label>
 
         <button onclick="generateSchedule()">생성</button>
@@ -118,17 +158,20 @@
     <div id="scheduleContainer">
         <table>
             <caption id="tableCaption">종로 07번 근무현황표</caption>
+           
             <thead>
                 <tr>
                     <th>월일</th>
                     <th>요일</th>
                     <th>3613</th>
                     <th>5536호</th>
+   
                     <th>5537</th>
                     <th>3612</th>
                     <th>5518</th>
                     <th>기 타</th>
                 </tr>
+      
             </thead>
             <tbody id="scheduleBody"></tbody>
         </table>
@@ -141,7 +184,6 @@
 
         // 차량 열
         const VEHICLE_COLUMNS = ['3613','5536호','5537','3612','5518','기 타'];
-
         // 초기화: 기존 0702의 간단한 recurring 스키마(만약 존재하면) -> 통합된 고정 포맷으로 변환
         function migrateOldRecurringIfNeeded() {
             const old = localStorage.getItem('jongro07RecurringSchedule');
@@ -169,15 +211,12 @@
         }
 
         migrateOldRecurringIfNeeded();
-
         let fixedScheduleData = JSON.parse(localStorage.getItem(STORAGE_KEY_FIXED)) || {};
         let tempScheduleData = JSON.parse(localStorage.getItem(STORAGE_KEY_TEMP)) || {};
         let scheduleData = {};
-
         // 날짜 관련 유틸
         const getDayName = (dayIndex) => ['일','월','화','수','목','금','토'][dayIndex];
         const getLastDayOfMonth = (year, month) => new Date(year, month, 0).getDate();
-
         // 공휴일 목록
         const isPublicHoliday = (date) => {
             const year = date.getFullYear();
@@ -231,15 +270,6 @@
             cellElement.innerHTML = renderCellContent(originalNames);
         }
 
-        // 새로운 함수: 강조 버튼 클릭 시 굵기 토글
-        function toggleBold(buttonElement, type) {
-            const cellElement = buttonElement.closest('.edit-mode');
-            const inputElement = cellElement.querySelector(`.${type}-input`);
-            const isBold = inputElement.dataset.bold === 'true';
-            inputElement.dataset.bold = String(!isBold);
-            applyBoldStyle(inputElement);
-        }
-
         function editCell(cellElement, colId, dateString, dayOfWeek) {
             if (cellElement.classList.contains('edit-mode')) return;
             document.querySelectorAll('.edit-mode').forEach(cell => cancelEdit(cell));
@@ -254,13 +284,10 @@
             cellElement.dataset.dateString = dateString;
             cellElement.dataset.dayOfWeek = dayOfWeek;
             cellElement.classList.add('edit-mode');
-
             cellElement.innerHTML = `
                 <input type="text" class="morning-input" value="${escapeHtml(morningText)}" placeholder="오전 명단" data-bold="${morningBold}">
                 <input type="text" class="afternoon-input" value="${escapeHtml(afternoonText)}" placeholder="오후 명단" data-bold="${afternoonBold}">
                 <div class="cell-buttons">
-                    <button class="btn-bold" onclick="toggleBold(this, 'morning')">오전 강조</button>
-                    <button class="btn-bold" onclick="toggleBold(this, 'afternoon')">오후 강조</button>
                     <button class="btn-fixed" onclick="saveFixedCell(this.parentNode.parentNode)">고정</button>
                     <button class="btn-temp" onclick="saveTempCell(this.parentNode.parentNode)">임시</button>
                     <button class="btn-delete" onclick="deleteFixedCell(this.parentNode.parentNode)">삭제</button>
@@ -269,24 +296,27 @@
             `;
             const morningInput = cellElement.querySelector('.morning-input');
             const afternoonInput = cellElement.querySelector('.afternoon-input');
-
+            
             function applyBoldStyle(inputEl) {
                 const isBold = inputEl.dataset.bold === 'true';
                 inputEl.style.fontWeight = isBold ? 'bold' : 'normal';
             }
             applyBoldStyle(morningInput);
             applyBoldStyle(afternoonInput);
-
-            // 기존 더블클릭 기능 유지
-            morningInput.addEventListener('dblclick', () => {
+            
+            // 더블클릭으로 굵기 토글 기능 추가
+            morningInput.addEventListener('dblclick', (event) => {
+                event.stopPropagation();
                 morningInput.dataset.bold = (morningInput.dataset.bold === 'true') ? 'false' : 'true';
                 applyBoldStyle(morningInput);
             });
-            afternoonInput.addEventListener('dblclick', () => {
+
+            afternoonInput.addEventListener('dblclick', (event) => {
+                event.stopPropagation();
                 afternoonInput.dataset.bold = (afternoonInput.dataset.bold === 'true') ? 'false' : 'true';
                 applyBoldStyle(afternoonInput);
             });
-            
+
             morningInput.focus();
         }
 
@@ -310,21 +340,25 @@
             const namesToSave = getNamesAndBoldStateFromCell(cellElement);
 
             const recurringKey = `${dayOfWeek}-${colId}`;
-            if (!fixedScheduleData[recurringKey]) fixedScheduleData[recurringKey] = [];
+            if (!fixedScheduleData[recurringKey]) {
+                fixedScheduleData[recurringKey] = [];
+            }
+            
+            // 삭제 후 추가하여 중복 방지 및 최신 정보 유지
+            fixedScheduleData[recurringKey] = fixedScheduleData[recurringKey].filter(entry => new Date(dateString) > new Date(entry.dateString));
 
-            fixedScheduleData[recurringKey] = fixedScheduleData[recurringKey].filter(entry => entry.dateString !== dateString);
             fixedScheduleData[recurringKey].push({
                 dateString: dateString,
                 names: namesToSave
             });
-
-            for (const key in fixedScheduleData) {
-                fixedScheduleData[key].sort((a,b) => new Date(b.dateString) - new Date(a.dateString));
-            }
-
+            
+            // 날짜 역순으로 정렬하여 가장 최근의 고정 일정이 먼저 적용되도록 함
+            fixedScheduleData[recurringKey].sort((a,b) => new Date(b.dateString) - new Date(a.dateString));
+            
             localStorage.setItem(STORAGE_KEY_FIXED, JSON.stringify(fixedScheduleData));
             generateSchedule();
         }
+
 
         function saveTempCell(cellElement) {
             const colId = cellElement.dataset.colId;
@@ -344,6 +378,7 @@
             const dateString = cellElement.dataset.dateString;
             const recurringKey = `${dayOfWeek}-${colId}`;
 
+            // 임시 스케줄 먼저 삭제
             if (tempScheduleData[dateString] && tempScheduleData[dateString][colId]) {
                 delete tempScheduleData[dateString][colId];
                 if (Object.keys(tempScheduleData[dateString]).length === 0) {
@@ -351,12 +386,14 @@
                 }
                 localStorage.setItem(STORAGE_KEY_TEMP, JSON.stringify(tempScheduleData));
             }
-
+            
+            // 해당 날짜 이후의 고정 스케줄 모두 삭제
             if (fixedScheduleData[recurringKey]) {
-                fixedScheduleData[recurringKey] = fixedScheduleData[recurringKey].filter(entry => entry.dateString !== dateString);
+                fixedScheduleData[recurringKey] = fixedScheduleData[recurringKey].filter(entry => new Date(dateString) > new Date(entry.dateString));
                 if (fixedScheduleData[recurringKey].length === 0) delete fixedScheduleData[recurringKey];
                 localStorage.setItem(STORAGE_KEY_FIXED, JSON.stringify(fixedScheduleData));
             }
+
             generateSchedule();
         }
 
@@ -380,7 +417,6 @@
         
         function rotateNamesWeekly(names, weekNumber) {
             if (!names || names.length < 2) return [{text:'', bold:false},{text:'', bold:false}];
-            
             const isOddWeek = (weekNumber % 2) !== 0; 
             
             if (isOddWeek) {
@@ -412,17 +448,16 @@
                 startDate = new Date(year, month-1, 16);
                 endDate = new Date(year, month-1, getLastDayOfMonth(year, month));
             }
-            startDate.setHours(0,0,0,0); endDate.setHours(0,0,0,0);
+            startDate.setHours(0,0,0,0);
+            endDate.setHours(0,0,0,0);
             tableCaption.textContent = `종로 07번 ${year}년 ${month}월 ${startDate.getDate()}일 ~ ${endDate.getDate()}일까지 근무현황표`;
             scheduleBody.innerHTML = '';
-
             for (let current = new Date(startDate); current.getTime() <= endDate.getTime(); current.setDate(current.getDate()+1)) {
                 const day = current.getDate();
                 const dayOfWeek = current.getDay();
                 const dayName = getDayName(dayOfWeek);
                 const isHoliday = isPublicHoliday(current);
                 const dateString = current.toISOString().slice(0,10);
-                
                 const firstDayOfYear = new Date(current.getFullYear(), 0, 1);
                 const days = Math.floor((current - firstDayOfYear) / (24 * 60 * 60 * 1000));
                 const weekNumber = Math.ceil((days + firstDayOfYear.getDay() + 1) / 7);
@@ -444,7 +479,6 @@
                         const key = `${dayOfWeek}-${colId}`;
                         if (fixedScheduleData[key] && Array.isArray(fixedScheduleData[key]) && fixedScheduleData[key].length>0) {
                             let applied = fixedScheduleData[key].find(entry => new Date(dateString) >= new Date(entry.dateString));
-                            if (!applied) applied = fixedScheduleData[key][0];
                             if (applied && applied.names) {
                                 cellsContent[colId] = rotateNamesWeekly(applied.names, weekNumber);
                             }
@@ -453,7 +487,6 @@
                 }
 
                 scheduleData[dateString] = cellsContent;
-
                 let rowClass = '';
                 if (dayOfWeek === 0) rowClass = 'sunday';
                 else if (dayOfWeek === 6) rowClass = 'saturday';
