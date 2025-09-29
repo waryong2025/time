@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>와룡운수 종로 07번 근무 현황표 </title>
+    <title> 와룡운수 종로 07번 근무현황표 </title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -43,12 +43,11 @@
             margin:20px auto; max-width:95%; overflow-x:auto;
         }
         table {
-            width:100%; min-width:700px; border-collapse:collapse; margin:0 auto; background:#fff; table-layout:fixed;
+            width:100%; min-width:700px; border-collapse:collapse; margin:0 auto; font-size:14pt; background:#fff; table-layout:fixed;
         }
         th, td {
             border:1px solid #ddd; padding:6px; text-align:center; vertical-align:top; line-height:1.1; word-break:keep-all;
             height:38px; box-sizing:border-box;
-            font-size: 14pt; /* 차량번호 및 근무자 명단 14pt */
         }
         th:nth-child(1), td:nth-child(1),
         th:nth-child(2), td:nth-child(2) { 
@@ -62,23 +61,12 @@
         .holiday { background-color:#ffcccc; font-weight:bold; color:#cc0000; }
 
         .edit-mode { position:relative; padding:2px; display:flex; flex-direction:column; justify-content:center; height:100%; }
-        .edit-mode input { 
-            width: calc(100% - 8px); 
-            margin-bottom:2px; 
-            padding:2px; 
-            box-sizing:border-box; 
-            font-size: 7pt; /* 입력창 글자 크기 50% */
-        }
+        .edit-mode input { width: calc(100% - 8px); margin-bottom:2px; padding:2px; box-sizing:border-box; }
         .edit-mode .cell-buttons { display:flex; justify-content:space-around; margin-top:2px; }
-        .edit-mode .cell-buttons button { 
-            padding:3px 5px; 
-            font-size:0.5em; /* 버튼 글자 크기 50% */
-            color:white; border:none; border-radius:3px; cursor:pointer; white-space:nowrap; 
-        }
+        .edit-mode .cell-buttons button { padding:3px 5px; font-size:0.7em; color:white; border:none; border-radius:3px; cursor:pointer; white-space:nowrap; }
         .edit-mode .cell-buttons button.btn-fixed { background-color:#28a745; }
         .edit-mode .cell-buttons button.btn-temp { background-color:#ffc107; color:#000; }
         .edit-mode .cell-buttons button.btn-delete { background-color:#dc3545; }
-        .edit-mode .cell-buttons button.btn-cancel { background-color:#6c757d; }
         .edit-mode .cell-buttons button.btn-bold { background-color:#007bff; color:white; }
 
         .name-entry { display:block; margin-top:2px; margin-bottom:2px; }
@@ -282,7 +270,6 @@
                     <button class="btn-fixed" onclick="saveFixedCell(this.parentNode.parentNode)">고정</button>
                     <button class="btn-temp" onclick="saveTempCell(this.parentNode.parentNode)">임시</button>
                     <button class="btn-delete" onclick="deleteFixedCell(this.parentNode.parentNode)">삭제</button>
-                    <button class="btn-cancel" onclick="cancelEdit(this.parentNode.parentNode)">취소</button>
                 </div>
             `;
             const morningInput = cellElement.querySelector('.morning-input');
@@ -514,4 +501,3 @@
     </script>
 </body>
 </html>
-
