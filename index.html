@@ -187,13 +187,13 @@
                         const arr = parsed[key];
                         const [morning, afternoon] = Array.isArray(arr) ? arr : ['',''];
                         const dateString = new Date().toISOString().slice(0,10);
-                        migrated[key] = [{
+                        migrated[key] = {
                             dateString,
                             names: [
-                                { text: '', bold: false },
-                                { text: '', bold: false }
+                                { text: morning, bold: false },
+                                { text: afternoon, bold: false }
                             ]
-                        }];
+                        };
                     }
                     localStorage.setItem(STORAGE_KEY_FIXED, JSON.stringify(migrated));
                 } catch(e) {
@@ -297,7 +297,7 @@
                     <button class="btn-bold" onclick="toggleBold(this, 'afternoon')">오후 강조</button>
                     <button class="btn-fixed" onclick="saveFixedCell(this.parentNode.parentNode)">고정</button>
                     <button class="btn-temp" onclick="saveTempCell(this.parentNode.parentNode)">임시</button>
-                    <button class="btn-delete" onclick="deleteFixedCell(this.parentNode.parentNode)">삭제</button>
+                    <button class="btn-delete" onclick="deleteCell(this.parentNode.parentNode)">삭제</button>
                 </div>
             `;
             const morningInput = cellElement.querySelector('.morning-input');
@@ -365,28 +365,32 @@
             generateSchedule();
         }
         
-        // --- 수정된 deleteFixedCell 함수 ---
-        function deleteFixedCell(cellElement) {
+        // --- 수정된 deleteCell 함수 ---
+        function deleteCell(cellElement) {
             const colId = cellElement.dataset.colId;
-            const dayOfWeek = cellElement.dataset.dayOfWeek;
             const dateString = cellElement.dataset.dateString;
-            const recurringKey = `${dayOfWeek}-${colId}`;
-            
+
+            // 1. 임시 근무표를 먼저 확인하고 삭제
             if (tempScheduleData[dateString] && tempScheduleData[dateString][colId]) {
                 delete tempScheduleData[dateString][colId];
                 if (Object.keys(tempScheduleData[dateString]).length === 0) {
                     delete tempScheduleData[dateString];
                 }
                 localStorage.setItem(STORAGE_KEY_TEMP, JSON.stringify(tempScheduleData));
-            } else if (fixedScheduleData[recurringKey]) {
-                const latestFixedDate = new Date(fixedScheduleData[recurringKey].dateString);
-                const currentDate = new Date(dateString);
-
-                if (currentDate.getTime() >= latestFixedDate.getTime()) {
-                     delete fixedScheduleData[recurringKey];
-                     localStorage.setItem(STORAGE_KEY_FIXED, JSON.stringify(fixedScheduleData));
+                alert("임시 근무표가 삭제되었습니다.");
+            } 
+            // 2. 임시 근무표가 없으면 현재 표시된 내용이 고정 근무표인지 확인하고, 임시로 빈 값 저장
+            else {
+                // scheduleData에 해당 날짜의 값이 있으면 (즉, 화면에 표시된 내용이 있으면)
+                if (scheduleData[dateString] && scheduleData[dateString][colId] && 
+                    (scheduleData[dateString][colId][0].text.trim() !== '' || scheduleData[dateString][colId][1].text.trim() !== '')) {
+                    // 빈 임시 근무표를 저장하여 고정 근무표를 덮어쓰기
+                    if (!tempScheduleData[dateString]) tempScheduleData[dateString] = {};
+                    tempScheduleData[dateString][colId] = [{text:'', bold:false},{text:'', bold:false}];
+                    localStorage.setItem(STORAGE_KEY_TEMP, JSON.stringify(tempScheduleData));
+                    alert("해당 날짜의 근무표가 삭제되었습니다.");
                 } else {
-                    alert("이 날짜보다 최근에 저장된 고정 근무표가 있어 삭제할 수 없습니다. 최근 날짜의 근무표를 삭제해주세요.");
+                    alert("삭제할 근무표가 없습니다.");
                 }
             }
             
@@ -529,4 +533,3 @@
     </script>
 </body>
 </html>
-
