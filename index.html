@@ -37,6 +37,8 @@
         .controls a.button-link:hover { background-color: #138496; }
         .controls button.btn-danger { background-color: #dc3545; }
         .controls button.btn-danger:hover { background-color: #c82333; }
+        .controls button.btn-success { background-color: #28a745; }
+        .controls button.btn-success:hover { background-color: #1e7e34; }
         
         #scheduleContainer {
             background-color: white;
@@ -159,10 +161,11 @@
         <button onclick="calculateWorkdays()">07번 근무일수계산</button>
         <button onclick="printPage()">인쇄</button>
         <button class="btn-danger" onclick="resetAllFixedSchedules()">전체 고정 초기화</button>
-        <a href="https://waryong2025.github.io/townbus/" class="button-link" target="_blank">08번 배차표</a>
-        <a href="https://waryong2025.github.io/timeman/" class="button-link" target="_blank">07번 배차표</a>
-        <a href="https://waryong2025.github.io/main/" class="button-link" target="_blank">08번 근무현황표</a>
-        <a href="https://waryong2025.github.io/testtime" class="button-link" target="_blank">3-2번 근무현황표</a>
+        <a href="https://waryong2025.github.io/townbus/" class="button-link" target="_blank">08번배차표</a>
+        <a href="https://waryong2025.github.io/timeman/" class="button-link" target="_blank">07번배차표</a>
+        <a href="https://waryong2025.github.io/main/" class="button-link" target="_blank">08번근무현황표</a>
+        <a href="https://waryong2025.github.io/testtime" class="button-link" target="_blank">3-2번근무현황표</a>
+        <button class="btn-success" onclick="downloadScheduleData()">07번근무백업데이터</button>
     </div>
     <div id="scheduleContainer">
         <table>
@@ -524,6 +527,44 @@
             document.title = newTitle;
             window.print();
         }
+
+        // --- 수정된 파일 다운로드 함수 ---
+        function downloadScheduleData() {
+            const dataToSave = {
+                fixedSchedule: fixedScheduleData,
+                tempSchedule: tempScheduleData,
+                storageKeys: {
+                    fixed: STORAGE_KEY_FIXED,
+                    temp: STORAGE_KEY_TEMP
+                }
+            };
+
+            const dataStr = JSON.stringify(dataToSave, null, 2); 
+            // 파일 형식: 텍스트 파일 (.txt)
+            const blob = new Blob([dataStr], { type: 'text/plain;charset=utf-8' }); 
+            
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            // 파일명: 키 정보(v3)와 날짜/시간을 포함하고 확장자는 .txt
+            const fileName = `종로07_근무표_백업_v3_${year}${month}${day}_${hours}${minutes}.txt`;
+            
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName; 
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // 수정된 부분: 경고문에서 '바탕화면' 관련 문구를 삭제
+            alert(`근무표 백업 데이터 파일 (${fileName})이 다운로드 폴더에 저장됩니다.`);
+        }
+        // ----------------------------------------
         
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
