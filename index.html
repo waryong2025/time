@@ -37,8 +37,20 @@
         .controls a.button-link:hover { background-color: #138496; }
         .controls button.btn-danger { background-color: #dc3545; }
         .controls button.btn-danger:hover { background-color: #c82333; }
-        .controls button.btn-success { background-color: #28a745; }
-        .controls button.btn-success:hover { background-color: #1e7e34; }
+        /* 08번 파일에서 가져온 백업 버튼 스타일 */
+        .controls button.btn-backup { 
+            background-color: #28a745; /* 밝은 녹색 */
+        }
+        .controls button.btn-backup:hover { 
+            background-color: #1e7e34; /* 어두운 녹색 */
+        }
+        /* 백업 업로드 버튼 스타일 (노란색 계열) */
+        .controls a.button-link.btn-restore {
+            background-color: #f0ad4e; /* 주황/노랑색 */
+        }
+        .controls a.button-link.btn-restore:hover {
+            background-color: #ec971f;
+        }
         
         #scheduleContainer {
             background-color: white;
@@ -165,7 +177,10 @@
         <a href="https://waryong2025.github.io/timeman/" class="button-link" target="_blank">07번배차표</a>
         <a href="https://waryong2025.github.io/main/" class="button-link" target="_blank">08번근무현황표</a>
         <a href="https://waryong2025.github.io/testtime" class="button-link" target="_blank">3-2번근무현황표</a>
-        <button class="btn-success" onclick="downloadScheduleData()">07번근무백업데이터</button>
+        
+        <button class="btn-backup" onclick="backupScheduleData()">07번근무백업다운</button>
+        <label for="restoreFile" class="button-link btn-restore">07번근무백업업로드</label>
+        <input type="file" id="restoreFile" style="display: none;" onchange="restoreScheduleData(this.files[0])" accept=".json">
     </div>
     <div id="scheduleContainer">
         <table>
@@ -504,10 +519,10 @@
 
             const originalTitle = document.title;
             const captionText = document.getElementById('tableCaption').textContent;
-            // "종로 07번 2025년 10월 16일 ~ 31일까지 근무현황표" 에서 날짜 추출
+            
             const matches = captionText.match(/(\d{4})년 (\d{1,2})월 (\d{1,2})일 ~ (\d{1,2})일/);
 
-            let newTitle = "종로07번 근무현황표"; // 기본 파일명
+            let newTitle = "종로07번 근무현황표"; 
             if (matches) {
                 const year = matches[1];
                 const month = matches[2].padStart(2, '0');
@@ -516,20 +531,18 @@
                 newTitle = `종로07번 ${year}-${month} (${startDay}일-${endDay}일)`;
             }
 
-            // 인쇄 후 제목을 원래대로 되돌리는 이벤트 핸들러
             const handleAfterPrint = () => {
                 document.title = originalTitle;
                 window.removeEventListener('afterprint', handleAfterPrint);
             };
             window.addEventListener('afterprint', handleAfterPrint);
 
-            // 인쇄 직전에 제목 변경
             document.title = newTitle;
             window.print();
         }
 
-        // --- 수정된 파일 다운로드 함수 ---
-        function downloadScheduleData() {
+        // --- 08번 파일 로직 적용: 백업 다운로드 함수 (JSON 형식 압축) ---
+        function backupScheduleData() {
             const dataToSave = {
                 fixedSchedule: fixedScheduleData,
                 tempSchedule: tempScheduleData,
@@ -539,9 +552,11 @@
                 }
             };
 
-            const dataStr = JSON.stringify(dataToSave, null, 2); 
-            // 파일 형식: 텍스트 파일 (.txt)
-            const blob = new Blob([dataStr], { type: 'text/plain;charset=utf-8' }); 
+            // JSON 문자열의 공백을 제거하여 압축 (Minification)
+            const dataStr = JSON.stringify(dataToSave); 
+            
+            // 파일 형식을 JSON으로 변경
+            const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' }); 
             
             const now = new Date();
             const year = now.getFullYear();
@@ -550,8 +565,8 @@
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
 
-            // 파일명: 키 정보(v3)와 날짜/시간을 포함하고 확장자는 .txt
-            const fileName = `종로07_근무표_백업_v3_${year}${month}${day}_${hours}${minutes}.txt`;
+            // 파일 확장자를 .json으로 변경
+            const fileName = `종로07_근무표_백업_v3_${year}${month}${day}_${hours}${minutes}.json`;
             
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -561,10 +576,65 @@
             a.click();
             document.body.removeChild(a);
 
-            // 수정된 부분: 경고문에서 '바탕화면' 관련 문구를 삭제
-            alert(`근무표 백업 데이터 파일 (${fileName})이 다운로드 폴더에 저장됩니다.`);
+            alert(`근무표 백업 데이터 파일 (${fileName})이 다운로드 폴더에 JSON 파일로 저장됩니다.`);
         }
-        // ----------------------------------------
+        // ----------------------------------------------------------------
+
+        // --- 08번 파일 로직 적용: 백업 복구 (업로드) 함수 ---
+        function restoreScheduleData(file) {
+            if (!file) {
+                return;
+            }
+            
+            if (!confirm(`[${file.name}] 파일을 업로드하여 저장된 07번 근무표를 복구하시겠습니까? (현재 데이터는 덮어쓰여집니다.)`)) {
+                document.getElementById('restoreFile').value = ''; // 취소 시 파일 선택 초기화
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const loadedData = JSON.parse(event.target.result);
+                    
+                    if (!loadedData.fixedSchedule || !loadedData.tempSchedule) {
+                        alert('파일 형식이 올바르지 않거나 데이터가 부족합니다. 백업 파일이 맞는지 확인해주세요.');
+                        document.getElementById('restoreFile').value = '';
+                        return;
+                    }
+
+                    // 데이터 키 확인 (선택 사항이지만 안전을 위해)
+                    if (loadedData.storageKeys?.fixed && loadedData.storageKeys.fixed !== STORAGE_KEY_FIXED) {
+                        if (!confirm(`경고: 이 파일은 다른 버전의 근무표 데이터일 수 있습니다. (키: ${loadedData.storageKeys.fixed}). 강제로 복구하시겠습니까?`)) {
+                            document.getElementById('restoreFile').value = '';
+                            return;
+                        }
+                    }
+
+                    // 데이터 복구 (localStorage에 저장)
+                    fixedScheduleData = loadedData.fixedSchedule;
+                    tempScheduleData = loadedData.tempSchedule;
+                    localStorage.setItem(STORAGE_KEY_FIXED, JSON.stringify(fixedScheduleData));
+                    localStorage.setItem(STORAGE_KEY_TEMP, JSON.stringify(tempScheduleData));
+                    
+                    // UI 업데이트 및 알림
+                    generateSchedule();
+                    alert(`[${file.name}] 파일로부터 근무표 데이터 복구를 완료했습니다. 화면을 확인해주세요.`);
+                    document.getElementById('restoreFile').value = ''; // 파일 선택 초기화
+
+                } catch (e) {
+                    alert('파일을 읽는 도중 오류가 발생했습니다. 파일이 손상되었거나 JSON 형식이 아닙니다.');
+                    console.error('Restore Error:', e);
+                    document.getElementById('restoreFile').value = '';
+                }
+            };
+            reader.onerror = function() {
+                alert('파일을 읽을 수 없습니다.');
+                document.getElementById('restoreFile').value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+        // ----------------------------------------------------------------
         
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
