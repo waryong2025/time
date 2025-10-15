@@ -24,6 +24,34 @@
             border: 1px solid #ddd; border-radius: 4px;
             width: 70px; box-sizing: border-box;
         }
+        /* ✅ 인쇄 옵션 셀렉트 박스 너비 조정 */
+        .controls select.margin-select {
+            width: 55px; /* 작은 크기로 조정 */
+            padding: 1px 3px; /* 작은 크기로 조정 */
+            font-size: 0.9em;
+        }
+        /* ✅ 새로운 근무표 관리 옵션 셀렉트 박스 스타일 (요청하신 눈에 띄는 색상 적용) */
+        .controls select.action-select {
+            padding: 8px 15px;
+            font-size: 17.5px;
+            background-color: #28a745; /* 밝은녹색 */
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            width: auto;
+        }
+        /* ✅ 관련 서비스 이동 셀렉트 박스 너비 조정 */
+        .controls select.service-select {
+            padding: 8px 15px; /* 버튼과 유사하게 */
+            font-size: 17.5px;
+            background-color: #17a2b8; /* 기존 링크 버튼 색상 */
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            width: auto; /* 내용에 맞춰 너비 자동 조절 */
+        }
         .controls input[type="radio"] { margin-left: 10px; }
         .controls button, .controls a.button-link {
             padding: 8px 15px;
@@ -33,24 +61,7 @@
         }
         .controls button { background-color: #007bff; }
         .controls button:hover { background-color: #0056b3; }
-        .controls a.button-link { background-color: #17a2b8; }
-        .controls a.button-link:hover { background-color: #138496; }
-        .controls button.btn-danger { background-color: #dc3545; }
-        .controls button.btn-danger:hover { background-color: #c82333; }
-        /* 08번 파일에서 가져온 백업 버튼 스타일 */
-        .controls button.btn-backup { 
-            background-color: #28a745; /* 밝은 녹색 */
-        }
-        .controls button.btn-backup:hover { 
-            background-color: #1e7e34; /* 어두운 녹색 */
-        }
-        /* 백업 업로드 버튼 스타일 (노란색 계열) */
-        .controls a.button-link.btn-restore {
-            background-color: #f0ad4e; /* 주황/노랑색 */
-        }
-        .controls a.button-link.btn-restore:hover {
-            background-color: #ec971f;
-        }
+        /* 기존의 고정초기화, 백업/복구 버튼 스타일은 이제 action-select에 통합되어 사용되지 않습니다. */
         
         #scheduleContainer {
             background-color: white;
@@ -118,9 +129,10 @@
         @media print {
             @page {
                 size: A4;
-                margin: 10mm;
-                margin-left: 15mm;
-                margin-right: 5mm;
+                /* ✅ CSS 변수를 사용하여 여백 설정 */
+                margin: 10mm; 
+                margin-left: var(--print-margin-left, 15mm); 
+                margin-right: var(--print-margin-right, 5mm);
             }
             body {
                 background-color: white;
@@ -151,6 +163,7 @@
                 align-items: stretch; }
             .controls input[type="number"], .controls select, .controls button, .controls a.button-link { width: 100%;
                 box-sizing: border-box; margin: 5px 0; }
+            .controls select.service-select, .controls select.action-select { width: 100%; }
             #scheduleContainer { padding: 5px; }
             table { font-size: 0.8em; }
             th, td { padding: 4px; }
@@ -171,16 +184,49 @@
         
         <button onclick="generateSchedule()">생성</button>
         <button onclick="calculateWorkdays()">07번 근무일수계산</button>
-        <button onclick="printPage()">인쇄</button>
-        <button class="btn-danger" onclick="resetAllFixedSchedules()">전체 고정 초기화</button>
-        <a href="https://waryong2025.github.io/townbus/" class="button-link" target="_blank">08번배차표</a>
-        <a href="https://waryong2025.github.io/timeman/" class="button-link" target="_blank">07번배차표</a>
-        <a href="https://waryong2025.github.io/main/" class="button-link" target="_blank">08번근무현황표</a>
-        <a href="https://waryong2025.github.io/testtime" class="button-link" target="_blank">3-2번근무현황표</a>
         
-        <button class="btn-backup" onclick="backupScheduleData()">07번근무백업다운</button>
-        <label for="restoreFile" class="button-link btn-restore">07번근무백업업로드</label>
+        <div style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
+            <button onclick="printPage()">인쇄</button>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <div style="display: flex; align-items: center; gap: 3px; font-size: 0.9em; height: 18px;">
+                    <label for="marginLeftSelect">좌측여백:</label>
+                    <select id="marginLeftSelect" class="margin-select" style="width: 55px; padding: 1px 3px; font-size: 0.9em;">
+                        <option value="0">0</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="30">30</option>
+                        <option value="40">40</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 3px; font-size: 0.9em; height: 18px;">
+                    <label for="marginRightSelect">우측여백:</label>
+                    <select id="marginRightSelect" class="margin-select" style="width: 55px; padding: 1px 3px; font-size: 0.9em;">
+                        <option value="0">0</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="30">30</option>
+                        <option value="40">40</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <select id="scheduleActionsSelect" class="action-select" onchange="handleScheduleActions()">
+            <option value="">근무표 관리 옵션</option>
+            <option value="reset">전체 고정 초기화</option>
+            <option value="backup">07번 근무 백업 다운</option>
+            <option value="restore">07번 근무 복구 업로드</option>
+        </select>
         <input type="file" id="restoreFile" style="display: none;" onchange="restoreScheduleData(this.files[0])" accept=".json">
+
+
+        <select id="serviceSelect" class="service-select" onchange="navigateService()">
+            <option value="">관련 서비스 이동</option>
+            <option value="https://waryong2025.github.io/townbus/">08번배차표</option>
+            <option value="https://waryong2025.github.io/timeman/">07번배차표</option>
+            <option value="https://waryong2025.github.io/main/">08번근무현황표</option>
+            <option value="https://waryong2025.github.io/testtime">3-2번근무현황표</option>
+        </select>
     </div>
     <div id="scheduleContainer">
         <table>
@@ -509,6 +555,7 @@
         }
 
         function printPage() {
+            // 인쇄 전 편집 모드 해제
             const editCell = document.querySelector('.edit-mode');
             if (editCell) {
                 const { colId, dateString } = editCell.dataset;
@@ -517,6 +564,14 @@
                 editCell.innerHTML = renderCellContent(originalNames);
             }
 
+            // ✅ 여백 옵션 값을 가져와 CSS 변수로 설정
+            const marginLeft = document.getElementById('marginLeftSelect').value;
+            const marginRight = document.getElementById('marginRightSelect').value;
+            
+            document.documentElement.style.setProperty('--print-margin-left', `${marginLeft}mm`);
+            document.documentElement.style.setProperty('--print-margin-right', `${marginRight}mm`);
+
+            // 파일명 처리를 위한 제목 설정
             const originalTitle = document.title;
             const captionText = document.getElementById('tableCaption').textContent;
             
@@ -531,17 +586,33 @@
                 newTitle = `종로07번 ${year}-${month} (${startDay}일-${endDay}일)`;
             }
 
+            // ✅ 인쇄 후 제목을 원래대로, CSS 변수 초기화
             const handleAfterPrint = () => {
                 document.title = originalTitle;
+                document.documentElement.style.removeProperty('--print-margin-left');
+                document.documentElement.style.removeProperty('--print-margin-right');
                 window.removeEventListener('afterprint', handleAfterPrint);
             };
             window.addEventListener('afterprint', handleAfterPrint);
 
+            // 인쇄 직전에 제목 변경
             document.title = newTitle;
             window.print();
         }
 
-        // --- 08번 파일 로직 적용: 백업 다운로드 함수 (JSON 형식 압축) ---
+        // ✅ 관련 서비스 이동 함수 (변동 없음)
+        function navigateService() {
+            const selectElement = document.getElementById('serviceSelect');
+            const url = selectElement.value;
+            if (url) {
+                window.open(url, '_blank');
+                // 이동 후 옵션을 초기화하여 사용자가 다시 선택할 수 있도록 함
+                selectElement.value = ''; 
+            }
+        }
+
+
+        // --- 백업 다운로드 함수 (변동 없음) ---
         function backupScheduleData() {
             const dataToSave = {
                 fixedSchedule: fixedScheduleData,
@@ -580,7 +651,7 @@
         }
         // ----------------------------------------------------------------
 
-        // --- 08번 파일 로직 적용: 백업 복구 (업로드) 함수 ---
+        // --- 백업 복구 (업로드) 함수 (변동 없음) ---
         function restoreScheduleData(file) {
             if (!file) {
                 return;
@@ -635,6 +706,28 @@
             reader.readAsText(file);
         }
         // ----------------------------------------------------------------
+
+        // ✅ 통합된 근무표 관리 옵션 핸들러 함수 추가
+        function handleScheduleActions() {
+            const selectElement = document.getElementById('scheduleActionsSelect');
+            const action = selectElement.value;
+            
+            if (action === 'reset') {
+                resetAllFixedSchedules();
+            } else if (action === 'backup') {
+                backupScheduleData();
+            } else if (action === 'restore') {
+                // 숨겨진 파일 입력 필드를 클릭하여 파일 선택 창을 띄웁니다.
+                document.getElementById('restoreFile').click();
+            }
+            
+            // 작업을 수행한 후, 셀렉트 박스를 기본 옵션으로 초기화
+            selectElement.value = ''; 
+        }
+        
+        function closeModal() {
+            document.getElementById('workdayModal').style.display = 'none';
+        }
         
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
