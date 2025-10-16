@@ -30,7 +30,7 @@
             padding: 1px 3px; /* 작은 크기로 조정 */
             font-size: 0.9em;
         }
-        /* ✅ 새로운 근무표 관리 옵션 셀렉트 박스 스타일 (요청하신 눈에 띄는 색상 적용) */
+        /* ✅ 새로운 근무표 관리 옵션 셀렉트 박스 스타일 */
         .controls select.action-select {
             padding: 8px 15px;
             font-size: 17.5px;
@@ -41,17 +41,43 @@
             border-radius: 4px;
             width: auto;
         }
-        /* ✅ 관련 서비스 이동 셀렉트 박스 너비 조정 */
+        /* ✅ 관련 서비스 이동 셀렉트 박스 스타일 */
         .controls select.service-select {
-            padding: 8px 15px; /* 버튼과 유사하게 */
+            padding: 8px 15px;
             font-size: 17.5px;
             background-color: #17a2b8; /* 기존 링크 버튼 색상 */
             color: white;
             border: none;
             cursor: pointer;
             border-radius: 4px;
-            width: auto; /* 내용에 맞춰 너비 자동 조절 */
+            width: auto;
         }
+
+        /* ✅ 근무형태 옵션 셀렉트 박스 스타일 (업데이트) */
+        .controls select.work-type-select {
+            padding: 8px 15px;
+            font-size: 17.5px;
+            background-color: #ffc107; /* 노란색 */
+            color: #333;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            width: auto;
+        }
+
+        /* ✅ 차량 선택 셀렉트 박스 스타일 (업데이트) */
+        .controls select.vehicle-select {
+            padding: 8px 15px;
+            font-size: 17.5px;
+            background-color: #6c757d; /* 회색 */
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            width: auto;
+            margin-right: 0;
+        }
+
         .controls input[type="radio"] { margin-left: 10px; }
         .controls button, .controls a.button-link {
             padding: 8px 15px;
@@ -61,8 +87,11 @@
         }
         .controls button { background-color: #007bff; }
         .controls button:hover { background-color: #0056b3; }
-        /* 기존의 고정초기화, 백업/복구 버튼 스타일은 이제 action-select에 통합되어 사용되지 않습니다. */
-        
+        .controls a.button-link { background-color: #17a2b8; }
+        .controls a.button-link:hover { background-color: #138496; }
+        .controls button.btn-danger { background-color: #dc3545; }
+        .controls button.btn-danger:hover { background-color: #c82333; }
+
         #scheduleContainer {
             background-color: white;
             padding: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -106,10 +135,10 @@
             font-size: 0.7em; color: white; border: none;
             border-radius: 3px; cursor: pointer; white-space: nowrap;
         }
-        .edit-mode .cell-buttons button.btn-fixed { background-color: #28a745; }
+        .edit-mode .cell-buttons button.btn-fixed { background-color: #007bff; }
         .edit-mode .cell-buttons button.btn-temp { background-color: #ffc107; }
-        .edit-mode .cell-buttons button.btn-highlight-am { background-color: #ff8c00; }
-        .edit-mode .cell-buttons button.btn-highlight-pm { background-color: #ff8c00; }
+        .edit-mode .cell-buttons button.btn-highlight-am { background-color: #28a745; }
+        .edit-mode .cell-buttons button.btn-highlight-pm { background-color: #28a745; }
         .edit-mode button:disabled { cursor: not-allowed; opacity: 0.6; }
         .edit-mode .cell-buttons button.btn-delete { background-color: #dc3545; }
 
@@ -125,13 +154,13 @@
             width: 4%;
             min-width: 60px;
         }
-        
+
         @media print {
             @page {
                 size: A4;
                 /* ✅ CSS 변수를 사용하여 여백 설정 */
-                margin: 10mm; 
-                margin-left: var(--print-margin-left, 15mm); 
+                margin: 10mm;
+                margin-left: var(--print-margin-left, 15mm);
                 margin-right: var(--print-margin-right, 5mm);
             }
             body {
@@ -163,7 +192,8 @@
                 align-items: stretch; }
             .controls input[type="number"], .controls select, .controls button, .controls a.button-link { width: 100%;
                 box-sizing: border-box; margin: 5px 0; }
-            .controls select.service-select, .controls select.action-select { width: 100%; }
+            .controls select.service-select, .controls select.action-select,
+            .controls select.work-type-select, .controls select.vehicle-select { width: 100%; }
             #scheduleContainer { padding: 5px; }
             table { font-size: 0.8em; }
             th, td { padding: 4px; }
@@ -173,24 +203,24 @@
 <body>
     <div class="controls">
         <label for="yearInput">년도:</label>
-        <input type="number" id="yearInput">
+        <input type="number" id="yearInput" value="2025">
         <label for="monthInput">월:</label>
-        <input type="number" id="monthInput">
-        
+        <input type="number" id="monthInput" value="10">
+
         <input type="radio" id="option1" name="displayOption" value="1">
         <label for="option1">1일 ~ 15일</label>
-        <input type="radio" id="option2" name="displayOption" value="2">
+        <input type="radio" id="option2" name="displayOption" value="2" checked>
         <label for="option2">16일 ~ 말일</label>
-        
+
         <button onclick="generateSchedule()">생성</button>
-        <button onclick="calculateWorkdays()">07번 근무일수계산</button>
-        
+        <button onclick="calculateWorkdays()">07번근무일수계산</button>
+
         <div style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
-            <button onclick="printPage()">인쇄</button>
+            <button onclick="printPage()">인쇄실행</button>
             <div style="display: flex; flex-direction: column; gap: 2px;">
                 <div style="display: flex; align-items: center; gap: 3px; font-size: 0.9em; height: 18px;">
                     <label for="marginLeftSelect">좌측여백:</label>
-                    <select id="marginLeftSelect" class="margin-select" style="width: 55px; padding: 1px 3px; font-size: 0.9em;">
+                    <select id="marginLeftSelect" class="margin-select">
                         <option value="0">0</option>
                         <option value="10" selected>10</option>
                         <option value="20">20</option>
@@ -200,7 +230,7 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 3px; font-size: 0.9em; height: 18px;">
                     <label for="marginRightSelect">우측여백:</label>
-                    <select id="marginRightSelect" class="margin-select" style="width: 55px; padding: 1px 3px; font-size: 0.9em;">
+                    <select id="marginRightSelect" class="margin-select">
                         <option value="0">0</option>
                         <option value="10">10</option>
                         <option value="20">20</option>
@@ -210,70 +240,90 @@
                 </div>
             </div>
         </div>
-        
+
         <select id="scheduleActionsSelect" class="action-select" onchange="handleScheduleActions()">
             <option value="">근무표 관리 옵션</option>
             <option value="reset">전체 고정 초기화</option>
-            <option value="backup">07번 근무 백업 다운</option>
-            <option value="restore">07번 근무 복구 업로드</option>
+            <option value="backup">근무자 백업 다운</option>
+            <option value="restore">근무자 복구 업로드</option>
         </select>
         <input type="file" id="restoreFile" style="display: none;" onchange="restoreScheduleData(this.files[0])" accept=".json">
+
+        <select id="vehicleSelect" class="vehicle-select">
+            <option value="">차량 선택</option>
+            <option value="5533">5533</option>
+            <option value="3608">3608</option>
+            <option value="6207">6207</option>
+            <option value="5538">5538</option>
+            <option value="3613">3613</option>
+            <option value="6206">6206</option>
+            <option value="6204">6204</option>
+            <option value="3616">3616</option>
+            <option value="5537">5537</option>
+            <option value="6203">6203</option>
+            <option value="비고">비고</option>
+        </select>
+        <select id="workTypeSelect" class="work-type-select" onchange="handleWorkTypeChange()">
+            <option value="">근무형태 선택</option>
+            <option value="normal">3/3 근무 </option>
+            <option value="biweekly">격주 근무 </option>
+            </select>
 
 
         <select id="serviceSelect" class="service-select" onchange="navigateService()">
             <option value="">관련 서비스 이동</option>
-            <option value="https://waryong2025.github.io/townbus/">08번배차표</option>
-            <option value="https://waryong2025.github.io/timeman/">07번배차표</option>
-            <option value="https://waryong2025.github.io/main/">08번근무현황표</option>
-            <option value="https://waryong2025.github.io/testtime">3-2번근무현황표</option>
+            <option value="https://waryong2025.github.io/townbus/">08번 배차표</option>
+            <option value="https://waryong2025.github.io/timeman/">07번 배차표</option>
+            <option value="https://waryong2025.github.io/time">07번 근무현황표</option>
+            <option value="https://waryong2025.github.io/mainwaryong">3-1번 근무현황표</option>
+            <option value="https://waryong2025.github.io/testtime">3-2번 근무현황표</option>
         </select>
+
     </div>
     <div id="scheduleContainer">
         <table>
-            <caption id="tableCaption"></caption>
-            <thead id="scheduleHeader"></thead>
-            <tbody id="scheduleBody"></tbody>
+            <caption id="tableCaption">와룡운수 종로 07번 2025년 10월 16일 ~ 말일까지 근무현황표</caption>
+            <thead id="scheduleHeader">
+            </thead>
+            <tbody id="scheduleBody">
+            </tbody>
         </table>
     </div>
 
+    <div id="workdayModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <div id="modalTableContainer"></div>
+        </div>
+    </div>
+
     <script>
-        const VEHICLE_COLUMNS = ['3613', '5536', '5537', '3612', '5518', '비고'];
-        const STORAGE_KEY_FIXED = 'jongro07FixedSchedule_v3';
-        const STORAGE_KEY_TEMP = 'jongro07TempSchedule_v3';
+        const VEHICLE_COLUMNS = ['5533', '3608', '6207', '5538', '3613', '6206', '6204', '3616', '5537', '6203', '비고'];
+
+        const STORAGE_KEY_FIXED = 'jongro07FixedSchedule';
+        const STORAGE_KEY_TEMP = 'jongro07TempSchedule';
+        // ✅ 새로운 근무형태 설정 저장소 키
+        const STORAGE_KEY_WORKTYPE = 'jongro07WorkTypeConfig';
 
         let fixedScheduleData = JSON.parse(localStorage.getItem(STORAGE_KEY_FIXED)) || {};
         let tempScheduleData = JSON.parse(localStorage.getItem(STORAGE_KEY_TEMP)) || {};
+        // ✅ 차량별 근무형태 설정 (기본: normal (3/3 근무))
+        let workTypeConfig = JSON.parse(localStorage.getItem(STORAGE_KEY_WORKTYPE)) || {};
+
         let scheduleData = {};
 
         function getDayName(dayOfWeek) {
-            return ['일', '월', '화', '수', '목', '금', '토'][dayOfWeek];
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            return days[dayOfWeek];
         }
 
-        // 2025년 법정공휴일 정보
-        function getPublicHoliday(date) {
+        function isPublicHoliday(date) {
+            const year = date.getFullYear();
             const month = date.getMonth() + 1;
             const day = date.getDate();
-
-            const holidays = [
-                { month: 1, day: 1, name: '신정' },
-                { month: 1, day: 28, name: '설날' },
-                { month: 1, day: 29, name: '설날' },
-                { month: 1, day: 30, name: '설날' },
-                { month: 3, day: 1, name: '삼일절' },
-                { month: 5, day: 5, name: '어린이날' },
-                { month: 5, day: 6, name: '대체공휴일 (부처님오신날)' },
-                { month: 6, day: 6, name: '현충일' },
-                { month: 8, day: 15, name: '광복절' },
-                { month: 10, day: 3, name: '개천절' },
-                { month: 10, day: 6, name: '추석' },
-                { month: 10, day: 7, name: '추석' },
-                { month: 10, day: 8, name: '대체공휴일 (추석)' },
-                { month: 10, day: 9, name: '한글날' },
-                { month: 12, day: 25, name: '성탄절' }
-            ];
-
-            const holiday = holidays.find(h => h.month === month && h.day === day);
-            return holiday ? holiday.name : null;
+            const holidays = [];
+            return holidays.some(h => h.month === month && h.day === day);
         }
 
         function renderCellContent(names) {
@@ -285,23 +335,21 @@
                 return `<span class="name-entry${hiddenClass} ${item.bold ? 'bold-name' : ''}">${display}</span>`;
             }).join('');
         }
-        
+
         function editCell(cell, colId, dateString, dayOfWeek) {
             if (cell.classList.contains('edit-mode')) return;
-
-            const existingEditCell = document.querySelector('.edit-mode');
-            if (existingEditCell) {
-                const prevColId = existingEditCell.dataset.colId;
-                const prevDateString = existingEditCell.dataset.dateString;
-                const originalNames = scheduleData[prevDateString]?.[prevColId] || [{ text: '', bold: false }, { text: '', bold: false }];
-                existingEditCell.classList.remove('edit-mode');
-                existingEditCell.innerHTML = renderCellContent(originalNames);
-            }
-
-            const currentNames = scheduleData[dateString]?.[colId] || [{ text: '', bold: false }, { text: '', bold: false }];
-            const morningValue = currentNames[0]?.text || '';
-            const afternoonValue = currentNames[1]?.text || '';
-            const isSunday = dayOfWeek === 0;
+            document.querySelectorAll('.edit-mode').forEach(editCell => {
+                const prevColId = editCell.dataset.colId;
+                const prevDateString = editCell.dataset.dateString;
+                const originalNames = (scheduleData[prevDateString] && scheduleData[prevDateString][prevColId]) || [{ text: '', bold: false }, { text: '', bold: false }];
+                editCell.classList.remove('edit-mode');
+                editCell.innerHTML = renderCellContent(originalNames);
+            });
+            const currentNames = (scheduleData[dateString] && scheduleData[dateString][colId]) || [{ text: '', bold: false }, { text: '', bold: false }];
+            const morningValue = currentNames[0] ? currentNames[0].text : '';
+            const afternoonValue = currentNames[1] ? currentNames[1].text : '';
+            // ✅ 일요일 격주 근무 차량의 고정 저장 방지 (로직은 saveFixedCell에서 처리)
+            const isBiweeklySunday = (workTypeConfig[colId] === 'biweekly' && dayOfWeek === 0);
 
             cell.classList.add('edit-mode');
             cell.dataset.colId = colId;
@@ -311,7 +359,7 @@
                 <input type="text" class="morning-input" value="${morningValue}" placeholder="오전" data-bold="${currentNames[0].bold}">
                 <input type="text" class="afternoon-input" value="${afternoonValue}" placeholder="오후" data-bold="${currentNames[1].bold}">
                 <div class="cell-buttons">
-                    <button class="btn-fixed" onclick="saveFixedCell(this.parentNode.parentNode)" ${isSunday ? 'disabled title="일요일은 고정 저장이 불가능합니다."' : ''}>고정</button>
+                    <button class="btn-fixed" onclick="saveFixedCell(this.parentNode.parentNode)" ${isBiweeklySunday ? 'disabled title="격주 근무 차량은 일요일 고정 저장이 불가능합니다."' : ''}>고정</button>
                     <button class="btn-temp" onclick="saveTempCell(this.parentNode.parentNode)">임시</button>
                     <button class="btn-highlight-am" onclick="highlightCell(this.parentNode.parentNode, 'am')">오전 강조</button>
                     <button class="btn-highlight-pm" onclick="highlightCell(this.parentNode.parentNode, 'pm')">오후 강조</button>
@@ -320,61 +368,128 @@
             `;
             cell.querySelector('.morning-input').focus();
         }
-        
+
         function getNamesAndBoldStateFromCell(cellElement) {
             const morningInput = cellElement.querySelector('.morning-input');
             const afternoonInput = cellElement.querySelector('.afternoon-input');
+            const morningText = morningInput.value.trim();
+            const afternoonText = afternoonInput.value.trim();
+
+            const morningBold = morningInput.dataset.bold === 'true';
+            const afternoonBold = afternoonInput.dataset.bold === 'true';
+
             return [
-                { text: morningInput.value.trim(), bold: morningInput.dataset.bold === 'true' },
-                { text: afternoonInput.value.trim(), bold: afternoonInput.dataset.bold === 'true' }
+                { text: morningText, bold: morningBold },
+                { text: afternoonText, bold: afternoonBold }
             ];
         }
-        
+
         function highlightCell(cellElement, timeOfDay) {
-            const inputElement = (timeOfDay === 'am') 
-                ? cellElement.querySelector('.morning-input') 
-                : cellElement.querySelector('.afternoon-input');
+            let inputElement;
+            if (timeOfDay === 'am') {
+                inputElement = cellElement.querySelector('.morning-input');
+            } else if (timeOfDay === 'pm') {
+                inputElement = cellElement.querySelector('.afternoon-input');
+            }
+
             if (inputElement) {
                 const isCurrentlyBold = inputElement.dataset.bold === 'true';
                 inputElement.dataset.bold = !isCurrentlyBold;
-                inputElement.style.fontWeight = !isCurrentlyBold ? 'bold' : 'normal';
+                inputElement.style.fontWeight = inputElement.dataset.bold === 'true' ? 'bold' : 'normal';
             }
         }
 
+        /**
+         * ✅ 고정 저장 로직 수정 (격주 근무 로직 일반화)
+         */
         function saveFixedCell(cellElement) {
             const { colId, dayOfWeek, dateString } = cellElement.dataset;
-            if (dayOfWeek === '0') {
-                alert('일요일은 고정 저장이 불가능합니다.');
+            const namesToSave = getNamesAndBoldStateFromCell(cellElement);
+            // 07번에는 3614와 같은 격주 로직이 기존에 없었으므로, workTypeConfig을 사용
+            const workType = workTypeConfig[colId] || 'normal';
+
+            // 1. 격주 근무 차량의 일요일 고정 저장 방지
+            if (workType === 'biweekly' && dayOfWeek === '0') {
+                alert('격주 근무 차량은 일요일 고정 저장이 불가능합니다.');
                 return;
             }
-            
-            const namesToSave = getNamesAndBoldStateFromCell(cellElement);
-            const recurringKey = `${dayOfWeek}-${colId}`;
 
-            if (!fixedScheduleData[recurringKey]) {
-                fixedScheduleData[recurringKey] = [];
+            // 2. 현재 날짜 고정 저장
+            const currentRecurringKey = `${dayOfWeek}-${colId}`;
+            if (!fixedScheduleData[currentRecurringKey]) {
+                fixedScheduleData[currentRecurringKey] = [];
             }
-            
-            fixedScheduleData[recurringKey] = fixedScheduleData[recurringKey].filter(entry => entry.anchorDate !== dateString);
-            fixedScheduleData[recurringKey].push({ anchorDate: dateString, names: namesToSave });
-            fixedScheduleData[recurringKey].sort((a, b) => new Date(b.anchorDate) - new Date(a.anchorDate));
+            // 기존의 해당 날짜 항목을 삭제 (덮어쓰기)
+            fixedScheduleData[currentRecurringKey] = fixedScheduleData[currentRecurringKey].filter(
+                entry => entry.dateString !== dateString
+            );
+            fixedScheduleData[currentRecurringKey].push({
+                dateString: dateString,
+                names: namesToSave
+            });
+
+
+            // 3. 격주 근무 (biweekly) 로테이션 추가 (일요일 제외)
+            if (workType === 'biweekly' && dayOfWeek !== '0') {
+                // 로테이션된 근무자: [오후 근무자, 오전 근무자]
+                const rotatedNames = [
+                    namesToSave[1], // 오후 근무자가 다음 주 오전 근무자로
+                    namesToSave[0]  // 오전 근무자가 다음 주 오후 근무자로
+                ];
+
+                // 현재 날짜에서 7일 후 날짜 계산
+                const currentDate = new Date(dateString);
+                currentDate.setDate(currentDate.getDate() + 7);
+                const nextWeekDateString = currentDate.toISOString().slice(0, 10);
+
+                // 다음 주의 recurringKey는 동일함 (같은 요일이므로)
+                const nextWeekRecurringKey = currentRecurringKey;
+
+                // 다음 주 같은 요일의 근무표를 고정 저장
+                if (!fixedScheduleData[nextWeekRecurringKey]) {
+                    fixedScheduleData[nextWeekRecurringKey] = [];
+                }
+
+                // 다음 주 같은 요일의 기존 항목을 삭제 (덮어쓰기)
+                fixedScheduleData[nextWeekRecurringKey] = fixedScheduleData[nextWeekRecurringKey].filter(
+                    entry => entry.dateString !== nextWeekDateString
+                );
+
+                // 로테이션된 근무자를 다음 주 날짜로 고정 저장.
+                fixedScheduleData[nextWeekRecurringKey].push({
+                    dateString: nextWeekDateString,
+                    names: rotatedNames
+                });
+            }
+            // 'normal' (3/3 근무)의 경우 7일 후 로테이션은 적용하지 않음.
+
+
+            // 4. 가장 최근 날짜 순으로 정렬 (데이터 조회 시 최신 날짜 우선 적용)
+            for (const key in fixedScheduleData) {
+                fixedScheduleData[key].sort((a, b) => new Date(b.dateString) - new Date(a.dateString));
+            }
 
             localStorage.setItem(STORAGE_KEY_FIXED, JSON.stringify(fixedScheduleData));
             generateSchedule();
         }
-        
+
         function saveTempCell(cellElement) {
             const { colId, dateString } = cellElement.dataset;
             const namesToSave = getNamesAndBoldStateFromCell(cellElement);
-            if (!tempScheduleData[dateString]) tempScheduleData[dateString] = {};
+
+            if (!tempScheduleData[dateString]) {
+                tempScheduleData[dateString] = {};
+            }
             tempScheduleData[dateString][colId] = namesToSave;
+
             localStorage.setItem(STORAGE_KEY_TEMP, JSON.stringify(tempScheduleData));
             generateSchedule();
         }
-        
+
         function deleteCell(cellElement) {
             const { colId, dayOfWeek, dateString } = cellElement.dataset;
 
+            // 1. 임시 근무표 삭제
             if (tempScheduleData[dateString]?.[colId]) {
                 delete tempScheduleData[dateString][colId];
                 if (Object.keys(tempScheduleData[dateString]).length === 0) {
@@ -383,20 +498,28 @@
                 localStorage.setItem(STORAGE_KEY_TEMP, JSON.stringify(tempScheduleData));
             }
 
+            // 2. 고정 근무표 삭제 (빈칸으로 덮어쓰기)
             const recurringKey = `${dayOfWeek}-${colId}`;
             if (fixedScheduleData[recurringKey]) {
                 const blankNames = [{ text: '', bold: false }, { text: '', bold: false }];
-                fixedScheduleData[recurringKey] = fixedScheduleData[recurringKey].filter(entry => entry.anchorDate !== dateString);
-                fixedScheduleData[recurringKey].push({ anchorDate: dateString, names: blankNames });
-                fixedScheduleData[recurringKey].sort((a, b) => new Date(b.anchorDate) - new Date(a.anchorDate));
+
+                // 기존의 해당 날짜 항목을 삭제 (새 빈칸 항목을 추가하여 덮어쓰기 위함)
+                fixedScheduleData[recurringKey] = fixedScheduleData[recurringKey].filter(entry => entry.dateString !== dateString);
+
+                // 빈칸 항목을 고정으로 저장
+                fixedScheduleData[recurringKey].push({ dateString: dateString, names: blankNames });
+
+                // 정렬 및 저장
+                fixedScheduleData[recurringKey].sort((a, b) => new Date(b.dateString) - new Date(a.dateString));
                 localStorage.setItem(STORAGE_KEY_FIXED, JSON.stringify(fixedScheduleData));
             }
-            
+
             generateSchedule();
         }
-        
+
         function resetAllFixedSchedules() {
-            if (prompt("저장된 모든 고정 근무표를 삭제하시려면 비밀번호를 입력하세요.") === "201023") {
+            const password = prompt("저장된 모든 고정 근무표를 삭제하시려면 비밀번호를 입력하세요.");
+            if (password === "201023") {
                 if (confirm("모든 고정 근무표를 삭제합니다. 계속하시겠습니까?")) {
                     fixedScheduleData = {};
                     localStorage.removeItem(STORAGE_KEY_FIXED);
@@ -404,6 +527,10 @@
                         tempScheduleData = {};
                         localStorage.removeItem(STORAGE_KEY_TEMP);
                     }
+                    // ✅ 근무형태 설정도 초기화
+                    workTypeConfig = {};
+                    localStorage.removeItem(STORAGE_KEY_WORKTYPE);
+
                     generateSchedule();
                     alert("모든 근무표가 초기화되었습니다.");
                 }
@@ -412,91 +539,183 @@
             }
         }
 
-        function getScheduleForDay(currentDate) {
-            const dateString = currentDate.toISOString().slice(0, 10);
-            const dayOfWeek = currentDate.getDay();
-            const dailySchedule = {};
+        // --- 백업 다운로드 함수 (업데이트) ---
+        function backupScheduleData() {
+            const fixedData = localStorage.getItem(STORAGE_KEY_FIXED);
+            const tempData = localStorage.getItem(STORAGE_KEY_TEMP);
+            const workTypeData = localStorage.getItem(STORAGE_KEY_WORKTYPE); // ✅ 근무형태 설정 추가
 
-            VEHICLE_COLUMNS.forEach(colId => {
-                let names = null;
+            const backupData = {
+                [STORAGE_KEY_FIXED]: fixedData ? JSON.parse(fixedData) : {},
+                [STORAGE_KEY_TEMP]: tempData ? JSON.parse(tempData) : {},
+                [STORAGE_KEY_WORKTYPE]: workTypeData ? JSON.parse(workTypeData) : {} // ✅ 근무형태 설정 추가
+            };
 
-                if (tempScheduleData[dateString]?.[colId]) {
-                    names = tempScheduleData[dateString][colId];
-                } 
-                else if (getPublicHoliday(new Date(currentDate))) {
-                    names = [{ text: '', bold: false }, { text: '', bold: false }];
-                }
-                else {
-                    const recurringKey = `${dayOfWeek}-${colId}`;
-                    const rules = fixedScheduleData[recurringKey];
-                    if (rules && rules.length > 0) {
-                        const applicableRule = rules.find(rule => new Date(rule.anchorDate) <= currentDate);
-                        if (applicableRule) {
-                            const anchorDate = new Date(applicableRule.anchorDate);
-                            const tempCurrentDate = new Date(currentDate);
-                            tempCurrentDate.setHours(0, 0, 0, 0);
-                            anchorDate.setHours(0, 0, 0, 0);
+            // JSON.stringify로 데이터를 압축하여 포맷팅을 제거 (공백 제거)
+            const jsonString = JSON.stringify(backupData);
 
-                            const diffWeeks = Math.floor((tempCurrentDate - anchorDate) / (1000 * 60 * 60 * 24 * 7));
+            // 파일명에 현재 시각을 포함하여 저장 (확장자를 .json으로 변경)
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
 
-                            if (Math.abs(diffWeeks % 2) === 1) {
-                                names = [applicableRule.names[1], applicableRule.names[0]];
-                            } else {
-                                names = applicableRule.names;
-                            }
-                        }
-                    }
-                }
+            const filename = `jongro07_backup_${year}${month}${day}_${hours}${minutes}${seconds}.json`;
 
-                dailySchedule[colId] = names || [{ text: '', bold: false }, { text: '', bold: false }];
-            });
-            return dailySchedule;
+            // Blob 객체를 생성하여 데이터를 파일 형태로 만듦 (JSON 파일 형식으로 변경)
+            const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+
+            // 다운로드 링크 생성 및 자동 클릭
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            alert(`근무표 백업 데이터 파일 (${filename})이 다운로드 폴더에 JSON 파일로 저장됩니다.`);
         }
+        // ----------------------------------------------------------------
+
+        // --- 백업 복구 (업로드) 함수 (추가) ---
+        function restoreScheduleData(file) {
+            const selectElement = document.getElementById('scheduleActionsSelect');
+            if (!file) {
+                selectElement.value = '';
+                return;
+            }
+
+            if (!confirm(`[${file.name}] 파일을 업로드하여 저장된 07번 근무표를 복구하시겠습니까? (현재 데이터는 덮어쓰여집니다.)`)) {
+                document.getElementById('restoreFile').value = '';
+                selectElement.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const loadedData = JSON.parse(event.target.result);
+
+                    const fixedKey = STORAGE_KEY_FIXED;
+                    const tempKey = STORAGE_KEY_TEMP;
+                    const workTypeKey = STORAGE_KEY_WORKTYPE; // ✅ 근무형태 설정 키
+
+                    let loadedFixed = loadedData[fixedKey];
+                    let loadedTemp = loadedData[tempKey];
+                    let loadedWorkType = loadedData[workTypeKey]; // ✅ 근무형태 설정 로드
+
+                    // 이전 버전 구조 확인
+                    if (!loadedFixed && !loadedTemp) {
+                         loadedFixed = loadedData.fixedSchedule;
+                         loadedTemp = loadedData.tempSchedule;
+                    }
+                    if (!loadedWorkType) {
+                        loadedWorkType = {}; // 이전 버전에서 설정이 없으면 빈 객체로 초기화
+                    }
+
+                    if (!loadedFixed || !loadedTemp) {
+                        alert('파일 형식이 올바르지 않거나 데이터가 부족합니다. 백업 파일이 맞는지 확인해주세요.');
+                        document.getElementById('restoreFile').value = '';
+                        selectElement.value = '';
+                        return;
+                    }
+
+                    // 데이터 복구 (localStorage에 저장)
+                    fixedScheduleData = loadedFixed;
+                    tempScheduleData = loadedTemp;
+                    workTypeConfig = loadedWorkType; // ✅ 근무형태 설정 복구
+
+                    localStorage.setItem(STORAGE_KEY_FIXED, JSON.stringify(fixedScheduleData));
+                    localStorage.setItem(STORAGE_KEY_TEMP, JSON.stringify(tempScheduleData));
+                    localStorage.setItem(STORAGE_KEY_WORKTYPE, JSON.stringify(workTypeConfig)); // ✅ 근무형태 설정 저장
+
+                    // UI 업데이트 및 알림
+                    generateSchedule();
+                    alert(`[${file.name}] 파일로부터 근무표 데이터 복구를 완료했습니다. 화면을 확인해주세요.`);
+                    document.getElementById('restoreFile').value = '';
+                    selectElement.value = '';
+
+                } catch (e) {
+                    alert('파일을 읽는 도중 오류가 발생했습니다. 파일이 손상되었거나 JSON 형식이 아닙니다.');
+                    console.error('Restore Error:', e);
+                    document.getElementById('restoreFile').value = '';
+                    selectElement.value = '';
+                }
+            };
+            reader.onerror = function() {
+                alert('파일을 읽을 수 없습니다.');
+                document.getElementById('restoreFile').value = '';
+                selectElement.value = '';
+            };
+
+            reader.readAsText(file);
+        }
+        // ----------------------------------------------------------------
 
         function generateSchedule() {
             const year = parseInt(document.getElementById('yearInput').value);
             const month = parseInt(document.getElementById('monthInput').value);
             const selectedOption = document.querySelector('input[name="displayOption"]:checked').value;
-            
+
             const scheduleHeader = document.getElementById('scheduleHeader');
             const scheduleBody = document.getElementById('scheduleBody');
             const tableCaption = document.getElementById('tableCaption');
-            
-            scheduleHeader.innerHTML = `<tr><th>월일</th><th>요일</th>${VEHICLE_COLUMNS.map(c => `<th>${c}</th>`).join('')}</tr>`;
+            const headerHTML = `<tr><th style="width: 4%;">월일</th><th style="width: 4%;">요일</th>${VEHICLE_COLUMNS.map(c => `<th>${c}</th>`).join('')}</tr>`;
+            scheduleHeader.innerHTML = headerHTML;
             scheduleBody.innerHTML = '';
-            
-            const startDateNum = selectedOption === '1' ? 1 : 16;
-            const startDate = new Date(year, month - 1, startDateNum);
+
+            const startDate = new Date(year, month - 1, selectedOption === '1' ? 1 : 16);
             const endDate = (selectedOption === '1') ? new Date(year, month - 1, 15) : new Date(year, month, 0);
-            
-            tableCaption.textContent = `종로 07번 ${year}년 ${month}월 ${startDate.getDate()}일 ~ ${endDate.getDate()}일까지 근무현황표`;
-            
+
+            tableCaption.textContent = `와룡운수 종로 07번 ${year}년 ${month}월 ${startDate.getDate()}일 ~ ${endDate.getDate()}일까지 근무현황표`;
+
             scheduleData = {};
 
             for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                const currentDate = new Date(d);
-                const dateString = currentDate.toISOString().slice(0, 10);
-                const dayOfWeek = currentDate.getDay();
-                
-                const cellsContent = getScheduleForDay(currentDate);
+                const dateString = d.toISOString().slice(0, 10);
+                const dayOfWeek = d.getDay(); // 0:일, 1:월, ..., 6:토
+
+                let cellsContent = {};
+                VEHICLE_COLUMNS.forEach(colId => {
+                    let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }];
+
+                    // 1. 임시 근무표 확인 (최우선 적용)
+                    if (tempScheduleData[dateString] && tempScheduleData[dateString][colId]) {
+                        appliedNames = tempScheduleData[dateString][colId];
+                    }
+                    // 2. 고정 근무표 확인
+                    else {
+                        const recurringKey = `${dayOfWeek}-${colId}`;
+                        if (fixedScheduleData[recurringKey]) {
+                            // 날짜 기준으로 가장 최근에 저장된 고정 데이터를 찾음
+                            for (const entry of fixedScheduleData[recurringKey]) {
+                                // 현재 보고 있는 날짜(dateString)가 고정 데이터의 기준 날짜(entry.dateString)와 같거나 그 이후여야 적용됩니다.
+                                if (new Date(dateString) >= new Date(entry.dateString)) {
+                                    appliedNames = entry.names;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    cellsContent[colId] = appliedNames;
+                });
                 scheduleData[dateString] = cellsContent;
-                
-                let rowClass = '';
-                if (getPublicHoliday(currentDate)) {
-                    rowClass = 'holiday';
-                } else if (dayOfWeek === 0) {
-                    rowClass = 'sunday';
-                } else if (dayOfWeek === 6) {
-                    rowClass = 'saturday';
+
+                let rowClass = isPublicHoliday(d) ? 'holiday' : '';
+                if (!rowClass) {
+                    if (dayOfWeek === 0) rowClass = 'sunday';
+                    else if (dayOfWeek === 6) rowClass = 'saturday';
                 }
 
                 const dataCellsHTML = VEHICLE_COLUMNS.map(colId =>
                     `<td onclick="editCell(this, '${colId}', '${dateString}', ${dayOfWeek})">${renderCellContent(cellsContent[colId])}</td>`
                 ).join('');
-
                 scheduleBody.insertAdjacentHTML('beforeend', `
                     <tr class="${rowClass}">
-                        <td>${currentDate.getDate()}</td>
+                        <td>${d.getDate()}</td>
                         <td>${getDayName(dayOfWeek)}</td>
                         ${dataCellsHTML}
                     </tr>`);
@@ -506,56 +725,143 @@
         function calculateWorkdays() {
             const year = parseInt(document.getElementById('yearInput').value);
             const month = parseInt(document.getElementById('monthInput').value);
-            
+
             const workdayCounts = {};
             const shiftCounts = {};
-            
+            const allNames = new Set();
+
             const startDate = new Date(year, month - 1, 1);
             const endDate = new Date(year, month, 0);
 
             for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                const dailySchedule = getScheduleForDay(new Date(d));
-                const dayWorkdays = new Set();
+                const dateString = d.toISOString().slice(0, 10);
+                const dayOfWeek = d.getDay();
 
-                for (const colId in dailySchedule) {
+                let dailyNames = {};
+                VEHICLE_COLUMNS.forEach(colId => {
+                    let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }];
+
+                    if (tempScheduleData[dateString] && tempScheduleData[dateString][colId]) {
+                        appliedNames = tempScheduleData[dateString][colId];
+                    }
+                    else {
+                        const recurringKey = `${dayOfWeek}-${colId}`;
+                        if (fixedScheduleData[recurringKey]) {
+                            for (const entry of fixedScheduleData[recurringKey]) {
+                                if (new Date(dateString) >= new Date(entry.dateString)) {
+                                    appliedNames = entry.names;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    dailyNames[colId] = appliedNames;
+                });
+
+                const dayWorkdays = new Set();
+                for (const colId in dailyNames) {
                     if (colId !== '비고') {
-                        dailySchedule[colId].forEach((item, index) => {
+                        dailyNames[colId].forEach((item, index) => {
                             const name = item.text.trim();
-                            if (name) {
-                                shiftCounts[name] = shiftCounts[name] || { 오전: 0, 오후: 0 };
-                                if (index === 0) shiftCounts[name].오전++;
-                                else shiftCounts[name].오후++;
+                            if (name !== '') {
+                                allNames.add(name);
+                                if (!shiftCounts[name]) {
+                                    shiftCounts[name] = { 오전: 0, 오후: 0 };
+                                }
+                                if (index === 0) {
+                                    shiftCounts[name].오전++;
+                                } else {
+                                    shiftCounts[name].오후++;
+                                }
                                 dayWorkdays.add(name);
                             }
                         });
                     }
                 }
                 dayWorkdays.forEach(name => {
-                    workdayCounts[name] = (workdayCounts[name] || 0) + 1;
+                    if (!workdayCounts[name]) {
+                        workdayCounts[name] = 0;
+                    }
+                    workdayCounts[name]++;
                 });
             }
-            
+
             const combinedData = Object.keys(workdayCounts).map(name => ({
                 name: name,
                 workdays: workdayCounts[name],
-                morningShifts: shiftCounts[name]?.오전 || 0,
-                afternoonShifts: shiftCounts[name]?.오후 || 0
-            })).sort((a, b) => b.workdays - a.workdays);
+                morningShifts: (shiftCounts[name] && shiftCounts[name].오전) || 0,
+                afternoonShifts: (shiftCounts[name] && shiftCounts[name].오후) || 0
+            }));
+
+            combinedData.sort((a, b) => b.workdays - a.workdays);
 
             const title = `${year}년 ${month}월 근무일수`;
             const tableHTML = `
-                <table style="width:100%; border-collapse:collapse;">
-                    <thead><tr><th style="padding:8px; border:1px solid #ddd;">이름</th><th style="padding:8px; border:1px solid #ddd;">오전</th><th style="padding:8px; border:1px solid #ddd;">오후</th><th style="padding:8px; border:1px solid #ddd;">총 근무일수</th></tr></thead>
-                    <tbody>${combinedData.map(data => `<tr><td style="padding:8px; border:1px solid #ddd;">${data.name}</td><td style="padding:8px; border:1px solid #ddd;">${data.morningShifts}일</td><td style="padding:8px; border:1px solid #ddd;">${data.afternoonShifts}일</td><td style="padding:8px; border:1px solid #ddd;">${data.workdays}일</td></tr>`).join('')}</tbody>
-                </table>`;
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%; padding: 8px; border: 1px solid #ddd;">이름</th>
+                            <th style="width: 25%; padding: 8px; border: 1px solid #ddd;">오전</th>
+                            <th style="width: 25%; padding: 8px; border: 1px solid #ddd;">오후</th>
+                            <th style="width: 25%; padding: 8px; border: 1px solid #ddd;">총 근무일수</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${combinedData.map(data => `
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${data.name}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${data.morningShifts}일</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${data.afternoonShifts}일</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${data.workdays}일</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
 
             const newWindow = window.open('', '_blank', 'width=600,height=400');
-            newWindow.document.write(`<html><head><title>${title}</title><style>body{font-family:Arial,sans-serif;margin:20px}h3{text-align:center}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:10px;text-align:center}th{background-color:#f2f2f2}.print-button{display:block;width:100px;margin:20px auto;padding:10px;background-color:#007bff;color:white;border:none;cursor:pointer;border-radius:5px}@media print{.print-button{display:none}}</style></head><body><h3>${title}</h3>${tableHTML}<button class="print-button" onclick="window.print()">인쇄</button></body></html>`);
+            newWindow.document.write(`
+                <html>
+                    <head>
+                        <title>${title}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            h3 { text-align: center; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+                            th { background-color: #f2f2f2; }
+                            .print-button {
+                                display: block;
+                                margin: 20px auto;
+                                padding: 10px 20px;
+                                background-color: #007bff;
+                                color: white;
+                                border: none;
+                                cursor: pointer;
+                                border-radius: 5px;
+                            }
+                            @media print {
+                                .print-button { display: none; }
+                                html, body {
+                                    height: 100%;
+                                    width: 100%;
+                                    margin: 0;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h3>${title}</h3>
+                        ${tableHTML}
+                        <button class="print-button" onclick="window.print()">인쇄</button>
+                    </body>
+                </html>
+            `);
             newWindow.document.close();
         }
 
+        // ✅ 인쇄 옵션 적용을 위해 수정됨
         function printPage() {
-            // 인쇄 전 편집 모드 해제
             const editCell = document.querySelector('.edit-mode');
             if (editCell) {
                 const { colId, dateString } = editCell.dataset;
@@ -567,26 +873,25 @@
             // ✅ 여백 옵션 값을 가져와 CSS 변수로 설정
             const marginLeft = document.getElementById('marginLeftSelect').value;
             const marginRight = document.getElementById('marginRightSelect').value;
-            
+
             document.documentElement.style.setProperty('--print-margin-left', `${marginLeft}mm`);
             document.documentElement.style.setProperty('--print-margin-right', `${marginRight}mm`);
 
-            // 파일명 처리를 위한 제목 설정
             const originalTitle = document.title;
             const captionText = document.getElementById('tableCaption').textContent;
-            
-            const matches = captionText.match(/(\d{4})년 (\d{1,2})월 (\d{1,2})일 ~ (\d{1,2})일/);
+            // "와룡운수 종로 07번 2025년 10월 16일 ~ 말일까지 근무현황표" 에서 날짜 추출
+            const matches = captionText.match(/(\d{4})년 (\d{1,2})월 (\d{1,2})일 ~ (\d{1,2}|말일)일/);
 
-            let newTitle = "종로07번 근무현황표"; 
+            let newTitle = "종로07번 근무현황표"; // 기본 파일명
             if (matches) {
                 const year = matches[1];
                 const month = matches[2].padStart(2, '0');
                 const startDay = matches[3].padStart(2, '0');
-                const endDay = matches[4].padStart(2, '0');
+                const endDay = matches[4];
                 newTitle = `종로07번 ${year}-${month} (${startDay}일-${endDay}일)`;
             }
 
-            // ✅ 인쇄 후 제목을 원래대로, CSS 변수 초기화
+            // 인쇄 후 제목과 CSS 변수를 원래대로 되돌리는 이벤트 핸들러
             const handleAfterPrint = () => {
                 document.title = originalTitle;
                 document.documentElement.style.removeProperty('--print-margin-left');
@@ -600,118 +905,11 @@
             window.print();
         }
 
-        // ✅ 관련 서비스 이동 함수 (변동 없음)
-        function navigateService() {
-            const selectElement = document.getElementById('serviceSelect');
-            const url = selectElement.value;
-            if (url) {
-                window.open(url, '_blank');
-                // 이동 후 옵션을 초기화하여 사용자가 다시 선택할 수 있도록 함
-                selectElement.value = ''; 
-            }
-        }
-
-
-        // --- 백업 다운로드 함수 (변동 없음) ---
-        function backupScheduleData() {
-            const dataToSave = {
-                fixedSchedule: fixedScheduleData,
-                tempSchedule: tempScheduleData,
-                storageKeys: {
-                    fixed: STORAGE_KEY_FIXED,
-                    temp: STORAGE_KEY_TEMP
-                }
-            };
-
-            // JSON 문자열의 공백을 제거하여 압축 (Minification)
-            const dataStr = JSON.stringify(dataToSave); 
-            
-            // 파일 형식을 JSON으로 변경
-            const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' }); 
-            
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-
-            // 파일 확장자를 .json으로 변경
-            const fileName = `종로07_근무표_백업_v3_${year}${month}${day}_${hours}${minutes}.json`;
-            
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = fileName; 
-            
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-            alert(`근무표 백업 데이터 파일 (${fileName})이 다운로드 폴더에 JSON 파일로 저장됩니다.`);
-        }
-        // ----------------------------------------------------------------
-
-        // --- 백업 복구 (업로드) 함수 (변동 없음) ---
-        function restoreScheduleData(file) {
-            if (!file) {
-                return;
-            }
-            
-            if (!confirm(`[${file.name}] 파일을 업로드하여 저장된 07번 근무표를 복구하시겠습니까? (현재 데이터는 덮어쓰여집니다.)`)) {
-                document.getElementById('restoreFile').value = ''; // 취소 시 파일 선택 초기화
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    const loadedData = JSON.parse(event.target.result);
-                    
-                    if (!loadedData.fixedSchedule || !loadedData.tempSchedule) {
-                        alert('파일 형식이 올바르지 않거나 데이터가 부족합니다. 백업 파일이 맞는지 확인해주세요.');
-                        document.getElementById('restoreFile').value = '';
-                        return;
-                    }
-
-                    // 데이터 키 확인 (선택 사항이지만 안전을 위해)
-                    if (loadedData.storageKeys?.fixed && loadedData.storageKeys.fixed !== STORAGE_KEY_FIXED) {
-                        if (!confirm(`경고: 이 파일은 다른 버전의 근무표 데이터일 수 있습니다. (키: ${loadedData.storageKeys.fixed}). 강제로 복구하시겠습니까?`)) {
-                            document.getElementById('restoreFile').value = '';
-                            return;
-                        }
-                    }
-
-                    // 데이터 복구 (localStorage에 저장)
-                    fixedScheduleData = loadedData.fixedSchedule;
-                    tempScheduleData = loadedData.tempSchedule;
-                    localStorage.setItem(STORAGE_KEY_FIXED, JSON.stringify(fixedScheduleData));
-                    localStorage.setItem(STORAGE_KEY_TEMP, JSON.stringify(tempScheduleData));
-                    
-                    // UI 업데이트 및 알림
-                    generateSchedule();
-                    alert(`[${file.name}] 파일로부터 근무표 데이터 복구를 완료했습니다. 화면을 확인해주세요.`);
-                    document.getElementById('restoreFile').value = ''; // 파일 선택 초기화
-
-                } catch (e) {
-                    alert('파일을 읽는 도중 오류가 발생했습니다. 파일이 손상되었거나 JSON 형식이 아닙니다.');
-                    console.error('Restore Error:', e);
-                    document.getElementById('restoreFile').value = '';
-                }
-            };
-            reader.onerror = function() {
-                alert('파일을 읽을 수 없습니다.');
-                document.getElementById('restoreFile').value = '';
-            };
-            
-            reader.readAsText(file);
-        }
-        // ----------------------------------------------------------------
-
         // ✅ 통합된 근무표 관리 옵션 핸들러 함수 추가
         function handleScheduleActions() {
             const selectElement = document.getElementById('scheduleActionsSelect');
             const action = selectElement.value;
-            
+
             if (action === 'reset') {
                 resetAllFixedSchedules();
             } else if (action === 'backup') {
@@ -720,15 +918,51 @@
                 // 숨겨진 파일 입력 필드를 클릭하여 파일 선택 창을 띄웁니다.
                 document.getElementById('restoreFile').click();
             }
-            
+
             // 작업을 수행한 후, 셀렉트 박스를 기본 옵션으로 초기화
-            selectElement.value = ''; 
+            selectElement.value = '';
         }
-        
+
+        // ✅ 근무형태 변경 핸들러 함수 추가
+        function handleWorkTypeChange() {
+            const vehicleSelect = document.getElementById('vehicleSelect');
+            const workTypeSelect = document.getElementById('workTypeSelect');
+            const colId = vehicleSelect.value;
+            const workType = workTypeSelect.value;
+
+            if (!colId || !workType) {
+                // 차량/근무형태가 선택되지 않았으면 무시
+                return;
+            }
+
+            if (workType === 'normal' || workType === 'biweekly') {
+                // 'normal'은 3/3 근무(로테이션 없음), 'biweekly'는 격주 근무(7일 로테이션)
+                if (confirm(`차량 [${colId}]의 근무형태를 [${workType === 'normal' ? '3/3 근무' : '격주 근무'}]로 설정하고 저장하시겠습니까?`)) {
+                    workTypeConfig[colId] = workType;
+                    localStorage.setItem(STORAGE_KEY_WORKTYPE, JSON.stringify(workTypeConfig));
+                    alert(`차량 [${colId}]의 근무형태가 [${workType === 'normal' ? '3/3 근무' : '격주 근무'}]로 설정되었습니다. '고정' 저장 시 적용됩니다.`);
+                }
+            }
+            // 작업 후 차량/근무형태 선택을 초기화
+            vehicleSelect.value = '';
+            workTypeSelect.value = '';
+        }
+
+        // ✅ 관련 서비스 이동 함수 추가
+        function navigateService() {
+            const selectElement = document.getElementById('serviceSelect');
+            const url = selectElement.value;
+            if (url) {
+                window.open(url, '_blank');
+                // 이동 후 옵션을 초기화하여 사용자가 다시 선택할 수 있도록 함
+                selectElement.value = '';
+            }
+        }
+
         function closeModal() {
             document.getElementById('workdayModal').style.display = 'none';
         }
-        
+
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
             document.getElementById('yearInput').value = today.getFullYear();
