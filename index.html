@@ -86,9 +86,33 @@
             margin-bottom: 10px; font-weight: bold;
             color: #333; text-decoration: underline;
         }
-        .sunday { background-color: #ffe0e0; }
-        .saturday { background-color: #e0e0ff; }
-        .holiday { background-color: #ffcccc; font-weight: bold; color: #cc0000; }
+        
+        /* ✅ 요청에 따라 배경색 제거 */
+        .sunday { /* background-color: #ffe0e0; */ } 
+        .saturday { /* background-color: #e0e0ff; */ }
+        
+        /* ✅ 공휴일 배경색 제거, 글씨는 붉게 유지 */
+        .holiday { 
+            /* background-color: #ffcccc; */ 
+            font-weight: bold; 
+            color: #cc0000; 
+        }
+
+        /* ✅ 요일/공휴일 줄임말 스타일 */
+        .day-abbr {
+            display: block; /* 줄바꿈 */
+            font-size: 0.5em; /* 1/2 크기 */
+            font-weight: normal; /* 요일의 bold 상속 방지 */
+            line-height: 1; /* 줄 간격 */
+            margin-top: 5px; /* 요청에 따라 요일과 간격 조절 */
+        }
+        .day-abbr.holiday-color {
+            color: #cc0000; /* 일요일 및 공휴일 (빨간색) */
+        }
+        .day-abbr.saturday-color {
+            color: #0000cc; /* 토요일 (파란색) */
+        }
+
         .edit-mode {
             position: relative;
             padding: 2px; display: flex; flex-direction: column;
@@ -256,6 +280,7 @@
             const month = date.getMonth() + 1;
             const day = date.getDate();
 
+            // 공휴일 정보 (이름에 '절' 포함된 것 포함)
             const holidays = [
                 { month: 1, day: 1, name: '신정' },
                 { month: 1, day: 28, name: '설날' },
@@ -263,19 +288,26 @@
                 { month: 1, day: 30, name: '설날' },
                 { month: 3, day: 1, name: '삼일절' },
                 { month: 5, day: 5, name: '어린이날' },
-                { month: 5, day: 6, name: '대체공휴일 (부처님오신날)' },
+                { month: 5, day: 6, name: '대체공휴일' }, // 부처님오신날 대체공휴일
                 { month: 6, day: 6, name: '현충일' },
                 { month: 8, day: 15, name: '광복절' },
                 { month: 10, day: 3, name: '개천절' },
                 { month: 10, day: 6, name: '추석' },
                 { month: 10, day: 7, name: '추석' },
-                { month: 10, day: 8, name: '대체공휴일 (추석)' },
+                { month: 10, day: 8, name: '대체공휴일' }, // 추석 대체공휴일
                 { month: 10, day: 9, name: '한글날' },
                 { month: 12, day: 25, name: '성탄절' }
             ];
 
             const holiday = holidays.find(h => h.month === month && h.day === day);
             return holiday ? holiday.name : null;
+        }
+
+        // 공휴일 줄임말을 반환하는 함수
+        function getHolidayAbbreviation(holidayName) {
+            if (!holidayName) return '';
+            // 이름이 두 글자 이상인 경우 첫 두 글자 반환.
+            return holidayName.length >= 2 ? holidayName.substring(0, 2) : holidayName;
         }
 
         function renderCellContent(names) {
@@ -345,8 +377,9 @@
 
         function saveFixedCell(cellElement) {
             const { colId, dayOfWeek, dateString } = cellElement.dataset;
-            if (dayOfWeek === '0') {
-                alert('일요일은 고정 저장이 불가능합니다.');
+            // 일요일(0)과 공휴일(holiday 클래스가 붙은 경우)은 고정 저장 불가능
+            if (dayOfWeek === '0' || cellElement.closest('tr').classList.contains('holiday')) {
+                alert('일요일 또는 공휴일은 고정 저장이 불가능합니다.');
                 return;
             }
             
@@ -418,17 +451,21 @@
             const dateString = currentDate.toISOString().slice(0, 10);
             const dayOfWeek = currentDate.getDay();
             const dailySchedule = {};
+            const isHoliday = !!getPublicHoliday(currentDate);
 
             VEHICLE_COLUMNS.forEach(colId => {
                 let names = null;
 
                 if (tempScheduleData[dateString]?.[colId]) {
+                    // 임시 근무가 최우선
                     names = tempScheduleData[dateString][colId];
                 } 
-                else if (getPublicHoliday(new Date(currentDate))) {
+                else if (isHoliday) {
+                    // 공휴일은 고정 근무 적용 안함 (공백으로)
                     names = [{ text: '', bold: false }, { text: '', bold: false }];
                 }
                 else {
+                    // 평일/토요일 고정 근무 적용
                     const recurringKey = `${dayOfWeek}-${colId}`;
                     const rules = fixedScheduleData[recurringKey];
                     if (rules && rules.length > 0) {
@@ -441,6 +478,7 @@
 
                             const diffWeeks = Math.floor((tempCurrentDate - anchorDate) / (1000 * 60 * 60 * 24 * 7));
 
+                            // 2주차마다 교대
                             if (Math.abs(diffWeeks % 2) === 1) {
                                 names = [applicableRule.names[1], applicableRule.names[0]];
                             } else {
@@ -450,6 +488,7 @@
                     }
                 }
 
+                // 기본값 (빈 칸)
                 dailySchedule[colId] = names || [{ text: '', bold: false }, { text: '', bold: false }];
             });
             return dailySchedule;
@@ -483,13 +522,29 @@
                 const cellsContent = getScheduleForDay(currentDate);
                 scheduleData[dateString] = cellsContent;
                 
+                const holidayName = getPublicHoliday(currentDate);
                 let rowClass = '';
-                if (getPublicHoliday(currentDate)) {
-                    rowClass = 'holiday';
+                let dayDisplay = getDayName(dayOfWeek);
+                let abbr = '';
+                let abbrClass = '';
+
+                if (holidayName) {
+                    rowClass = 'holiday'; 
+                    abbr = getHolidayAbbreviation(holidayName);
+                    abbrClass = 'holiday-color'; // 공휴일은 빨간색
                 } else if (dayOfWeek === 0) {
                     rowClass = 'sunday';
+                    abbr = '일요'; // 일요일 줄임말
+                    abbrClass = 'holiday-color'; // 일요일은 빨간색
                 } else if (dayOfWeek === 6) {
                     rowClass = 'saturday';
+                    abbr = '토요'; // 토요일 줄임말
+                    abbrClass = 'saturday-color'; // 토요일은 파란색
+                }
+
+                if (abbr) {
+                    // ✅ 요일 또는 공휴일 줄임말 추가 (클래스 및 간격 조정 적용)
+                    dayDisplay += `<span class="day-abbr ${abbrClass}">${abbr}</span>`;
                 }
 
                 const dataCellsHTML = VEHICLE_COLUMNS.map(colId =>
@@ -499,7 +554,7 @@
                 scheduleBody.insertAdjacentHTML('beforeend', `
                     <tr class="${rowClass}">
                         <td>${currentDate.getDate()}</td>
-                        <td>${getDayName(dayOfWeek)}</td>
+                        <td>${dayDisplay}</td>
                         ${dataCellsHTML}
                     </tr>`);
             }
@@ -566,7 +621,7 @@
                 editCell.innerHTML = renderCellContent(originalNames);
             }
 
-            // ✅ 여백 옵션 값을 가져와 CSS 변수로 설정
+            // 여백 옵션 값을 가져와 CSS 변수로 설정
             const marginLeft = document.getElementById('marginLeftSelect').value;
             const marginRight = document.getElementById('marginRightSelect').value;
             
@@ -588,7 +643,7 @@
                 newTitle = `종로07번 ${year}-${month} (${startDay}일-${endDay}일)`;
             }
 
-            // ✅ 인쇄 후 제목을 원래대로, CSS 변수 초기화
+            // 인쇄 후 제목을 원래대로, CSS 변수 초기화
             const handleAfterPrint = () => {
                 document.title = originalTitle;
                 document.documentElement.style.removeProperty('--print-margin-left');
@@ -602,7 +657,7 @@
             window.print();
         }
 
-        // ✅ 관련 서비스 이동 함수 (변동 없음)
+        // 관련 서비스 이동 함수
         function navigateService() {
             const selectElement = document.getElementById('serviceSelect');
             const url = selectElement.value;
@@ -614,7 +669,7 @@
         }
 
 
-        // --- 백업 다운로드 함수 (변동 없음) ---
+        // --- 백업 다운로드 함수 ---
         function backupScheduleData() {
             const dataToSave = {
                 fixedSchedule: fixedScheduleData,
@@ -653,7 +708,7 @@
         }
         // ----------------------------------------------------------------
 
-        // --- 백업 복구 (업로드) 함수 (변동 없음) ---
+        // --- 백업 복구 (업로드) 함수 ---
         function restoreScheduleData(file) {
             if (!file) {
                 return;
@@ -709,7 +764,7 @@
         }
         // ----------------------------------------------------------------
 
-        // ✅ 통합된 근무표 관리 옵션 핸들러 함수 추가
+        // 통합된 근무표 관리 옵션 핸들러 함수
         function handleScheduleActions() {
             const selectElement = document.getElementById('scheduleActionsSelect');
             const action = selectElement.value;
@@ -742,5 +797,3 @@
 </body>
 
 </html>
-
-
